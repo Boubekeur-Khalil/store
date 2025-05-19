@@ -5,7 +5,7 @@ import TestimonialSlider from "@/components/product/testimonial-slider"
 import Newsletter from "@/components/product/newsletter"
 import ProductHeader from "@/components/product/header"
 import Footer from "@/components/product/footer"
-import { ProductConstants } from ".//products/[slug]/constants"
+import { ProductConstants } from "../utils/constants"
 import { ProductImages } from "./products/[slug]/images"
 
 export default function Home() {

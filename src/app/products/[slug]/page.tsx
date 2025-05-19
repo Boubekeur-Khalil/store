@@ -9,7 +9,7 @@ import ProductHeader from "@/components/product/header"
 import { products } from "@/lib/products/products"
 import { useState } from "react"
 import Footer from '@/components/product/footer'
-import { ProductConstants } from './constants'
+import { ProductConstants } from '../../../utils/constants'
 import { ProductIcons } from './icons'
 import { ProductImages } from './images'
 
