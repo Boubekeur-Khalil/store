@@ -7,8 +7,13 @@ import ProductHeader from "@/components/product/header"
 import Footer from "@/components/product/footer"
 import { ProductConstants } from "../utils/constants"
 import { ProductImages } from "./products/[slug]/images"
+import { products } from "@/lib/products/products"
 
 export default function Home() {
+  // Get first 4 products for each section
+  const newArrivals = products.slice(0, 4)
+  const topSelling = products.slice(4, 8)
+
   return (
     <div className="flex flex-col min-h-screen">
       <ProductHeader />
@@ -56,8 +61,8 @@ export default function Home() {
         </h2>
         <ProductGrid />
         <div className="text-center mt-8">
-          <Button className="bg-black hover:bg-gray-800 text-white">
-            {ProductConstants.viewAllText}
+          <Button asChild className="bg-black hover:bg-gray-800 text-white">
+            <Link href="/products">{ProductConstants.viewAllText}</Link>
           </Button>
         </div>
       </section>
@@ -67,10 +72,10 @@ export default function Home() {
         <h2 className="text-3xl font-bold text-center mb-8">
           {ProductConstants.topSellingTitle}
         </h2>
-        <ProductGrid />
+        <ProductGrid/>
         <div className="text-center mt-8">
-          <Button className="bg-black hover:bg-gray-800 text-white">
-            {ProductConstants.viewAllText}
+          <Button asChild className="bg-black hover:bg-gray-800 text-white">
+            <Link href="/products">{ProductConstants.viewAllText}</Link>
           </Button>
         </div>
       </section>
