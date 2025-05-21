@@ -1,7 +1,7 @@
 // images.ts
 export const ProductImages = {
   // Hero banner
-  heroBanner: "/images/banner.jpg",
+  heroBanner: "/images/banner.png",
   
   // Product images
   products: {

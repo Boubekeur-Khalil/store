@@ -1,14 +1,17 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { ShoppingCart, User, Search, ChevronDown } from "lucide-react"
+import { useCart } from "@/hooks/use-cart"
 
 export default function Header() {
-  const [cartCount, setCartCount] = useState(1)
-
-  return (
+  const { cart } = useCart()
+  
+  // Calculate total items in cart
+const totalItems = cart.reduce((total, item) => total + (item.quantity || 1), 0)
+  
+return (
     <header className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
       <Link href="/" className="text-2xl font-bold mr-5">
         ZJ.CO
@@ -42,10 +45,14 @@ export default function Header() {
 
       <div className="flex items-center gap-5">
         <div className="relative">
-          <ShoppingCart className="h-6 w-6 cursor-pointer" />
-          <span className="absolute -top-2 -right-2 bg-black text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-            {cartCount}
-          </span>
+          <Link href="/cart">
+            <ShoppingCart className="h-6 w-6 cursor-pointer" />
+          </Link>
+          {totalItems > 0 && (
+            <span className="absolute -top-2 -right-2 bg-black text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+              {totalItems}
+            </span>
+          )}
         </div>
         <User className="h-6 w-6 cursor-pointer" />
       </div>

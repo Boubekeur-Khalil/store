@@ -1,6 +1,7 @@
 "use client"
 import { notFound } from 'next/navigation'
 import Image from "next/image"
+import { use } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import ProductGrid from "@/components/product/product-grid"
@@ -12,9 +13,26 @@ import Footer from '@/components/product/footer'
 import { ProductConstants } from '../../../utils/constants'
 import { ProductIcons } from './icons'
 import { ProductImages } from './images'
+import { useCart } from "@/hooks/use-cart"
 
-export default function ProductPage({ params }: { params: { slug: string } }) {
-  const product = products.find(p => p.slug === params.slug)
+export default function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = use(params)
+  const product = products.find(p => p.slug === resolvedParams.slug)
+  const { addToCart } = useCart()
+
+  const handleAddToCart = () => {
+    if (!product) return
+    
+    const selectedColor = product.colors[activeColorIndex]?.name
+    const selectedSize = product.sizes[activeSizeIndex]?.name
+
+    addToCart({
+      ...product,
+      quantity: quantity,
+      selectedColor,
+      selectedSize
+    })
+  }
   
   if (!product) {
     return notFound()
@@ -80,7 +98,9 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               <h1 className="text-2xl font-bold">{product.name}</h1>
               <div className="stars text-xl">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  ProductIcons.star(i < Math.floor(product.rating))
+                  <span key={`star-${i}`}>
+                    {ProductIcons.star(i < Math.floor(product.rating))}
+                  </span>
                 ))}
                 <span className="ml-1 text-base">{product.rating}</span>
               </div>
@@ -105,7 +125,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                 {product.colors.map((color, index) => (
                   <button
                     key={color.name}
-                    className={`w-8 h-8 rounded-full ${index === activeColorIndex ? "ring-2 ring-black ring-offset-2" : ""}`}
+                    className={`cursor-pointer w-8 h-8 rounded-full ${index === activeColorIndex ? "ring-2 ring-black ring-offset-2" : ""}`}
                     style={{ backgroundColor: color.value }}
                     onClick={() => setActiveColorIndex(index)}
                     aria-label={`Select ${color.name} color`}
@@ -116,12 +136,12 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
             {/* Size Options */}
             <div className="mb-8">
-              <div className="font-medium mb-4">Choose Size</div>
-              <div className="flex gap-3">
+              <div className="font-medium mb-4 ">Choose Size</div>
+              <div className="flex gap-3 ">
                 {product.sizes.map((size, index) => (
                   <button
                     key={size.name}
-                    className={`w-12 h-12 rounded-lg border ${
+                    className={`cursor-pointer w-12 h-12 rounded-lg border  ${
                       index === activeSizeIndex
                         ? "bg-black text-white border-black"
                         : "bg-white text-black border-gray-200"
@@ -137,7 +157,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             {/* Quantity Selector */}
             <div className="flex items-center mb-8">
               <button
-                className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center"
+                className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer"
                 onClick={decreaseQuantity}
               >
                 {ProductIcons.minus}
@@ -149,7 +169,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                 readOnly 
               />
               <button
-                className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center"
+                className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer"
                 onClick={increaseQuantity}
               >
                 {ProductIcons.plus}
@@ -157,9 +177,12 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             </div>
 
             {/* Add to Cart Button */}
-            <Button className="w-full py-6 rounded-full bg-black hover:bg-gray-800 text-white mb-8">
-              {ProductConstants.addToCartText}
-            </Button>
+            <Button
+        className="w-full py-6 rounded-full bg-black hover:bg-gray-800 text-white mb-8 cursor-pointer"
+        onClick={handleAddToCart} 
+      >
+        {ProductConstants.addToCartText}
+      </Button>
 
             {/* Product Tabs */}
             <Tabs defaultValue="details" className="w-full">

@@ -27,6 +27,10 @@ export interface Product {
   id: string;
   slug: string;
   name: string;
+  quantity?: number;
+  image?: string;
+  selectedColor?: string;
+  selectedSize?: string;
   description: string;
   price: string;
   originalPrice: string;

@@ -8,6 +8,7 @@ import { products } from '@/lib/products/products'
 import ProductHeader from "@/components/product/header"
 import Footer from "@/components/product/footer"
 import { ProductIcons } from './[slug]/icons'
+import Newsletter from '@/components/product/newsletter'
 
 interface Filters {
   sizes: string[]
@@ -42,12 +43,26 @@ export default function ProductFilterPage() {
   // Filtered products
   const filteredProducts = products.filter(product => {
     const price = parsePrice(product.price)
-    return (
-      price >= filters.priceRange[0] &&
-      price <= filters.priceRange[1] &&
-      product.rating >= filters.minRating &&
-      (filters.sizes.length === 0 || product.sizes.some(s => filters.sizes.includes(s.name))) &&
-      (filters.colors.length === 0 || product.colors.some(c => filters.colors.includes(c.name))))
+    
+    // Price range check
+    const priceInRange = price >= filters.priceRange[0] && price <= filters.priceRange[1]
+    
+    // Rating check
+    const ratingValid = product.rating >= filters.minRating
+    
+    // Size check - product must have ALL selected sizes
+    const sizesValid = filters.sizes.length === 0 || 
+      filters.sizes.every(selectedSize => 
+        product.sizes.some(productSize => productSize.name === selectedSize)
+      )
+    
+    // Color check - product must have ALL selected colors
+    const colorsValid = filters.colors.length === 0 || 
+      filters.colors.every(selectedColor => 
+        product.colors.some(productColor => productColor.name === selectedColor)
+      )
+
+    return priceInRange && ratingValid && sizesValid && colorsValid
   })
 
   // Pagination
@@ -181,7 +196,9 @@ export default function ProductFilterPage() {
                       <div className="flex items-center mt-1">
                         <span className="text-yellow-400">
                           {Array.from({ length: 5 }).map((_, i) => (
-                            ProductIcons.star(i < Math.floor(product.rating))
+                            <span key={`star-${product.id}-${i}`}>
+                              {ProductIcons.star(i < Math.floor(product.rating))}
+                            </span>
                           ))}
                         </span>
                         <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
@@ -231,6 +248,7 @@ export default function ProductFilterPage() {
           </div>
         </div>
       </div>
+      <Newsletter />
       <Footer />
     </div>
   )
