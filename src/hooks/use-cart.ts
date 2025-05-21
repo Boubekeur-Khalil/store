@@ -2,7 +2,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { Product } from "@/types/product"
+import { Product } from "@/lib/types/product"
 
 export const useCart = () => {
   const [cart, setCart] = useState<Product[]>([])

@@ -2,7 +2,7 @@
 "use client"
 
 import { useCart } from "@//hooks/use-cart"
-import { Product } from "@/types/product"
+import { Product } from "@/lib/types/product"
 import { Button } from "../ui/button"
 
 export const AddToCart = ({ product }: { product: Product }) => {

@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { ProductImages } from "../products/[slug]/images"
 import { ProductIcons } from "../products/[slug]/icons"
-import { Product } from "@/types/product"
+import { Product } from "@/lib/types/product"
 import ProductHeader from "@/components/product/header"
 import Footer from "@/components/product/footer"
 import Newsletter from '@/components/product/newsletter'
