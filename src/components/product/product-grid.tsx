@@ -5,20 +5,21 @@ import { ProductImages } from "@/app/products/[slug]/images"
 
 export default function ProductGrid() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-16">
       {products.map((product) => {
         const productImage = ProductImages.products[product.slug as keyof typeof ProductImages.products]?.main || ProductImages.placeholder
         
         return (
-          <div key={product.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+          <div key={product.id} className="bg-white w-[295px] h-[406px] rounded-[20px] transition-shadow">
             <Link href={`/products/${product.slug}`} className="block">
               <div className="overflow-hidden rounded-lg mb-3">
                 <Image
                   src={productImage}
                   alt={product.name}
-                  width={300}
-                  height={300}
-                  className="w-full h-auto aspect-square object-cover transition-transform hover:scale-105"
+                width={295}
+                height={406}
+                  className="w-full h-[295px]  transition-transform transform hover:scale-105"
+                
                 />
               </div>
               <h3 className="font-semibold text-sm mb-1">{product.name}</h3>

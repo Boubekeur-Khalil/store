@@ -51,17 +51,17 @@ export default function Home() {
 
       {/* Announcement Bar */}
       <div className="w-full h-[122px] bg-red-600 flex items-center justify-center text-2xl font-bold text-white">
-        {ProductConstants.announcementText}
+        <p className="text-[48px]">{ProductConstants.announcementText}</p>
       </div>
 
       {/* New Arrivals Section */}
       <section className="py-12 px-4">
-        <h2 className="text-3xl font-bold text-center mb-8">
-          {ProductConstants.newArrivalsTitle}
+        <h2 className="text-3xl font-bold text-center">
+          <p className="text-[48px]">{ProductConstants.newArrivalsTitle}</p>
         </h2>
         <ProductGrid />
         <div className="text-center mt-8">
-          <Button asChild className="bg-black hover:bg-gray-800 text-white">
+          <Button asChild className="bg-black hover:bg-gray-800 text-white rounded-[62px] w-[218px] h-[52px] text-[16px]">
             <Link href="/products">{ProductConstants.viewAllText}</Link>
           </Button>
         </div>
@@ -74,7 +74,7 @@ export default function Home() {
         </h2>
         <ProductGrid/>
         <div className="text-center mt-8">
-          <Button asChild className="bg-black hover:bg-gray-800 text-white">
+          <Button asChild className="bg-black hover:bg-gray-800 text-white rounded-[62px] w-[218px] h-[52px] text-[16px]">
             <Link href="/products">{ProductConstants.viewAllText}</Link>
           </Button>
         </div>
@@ -82,7 +82,7 @@ export default function Home() {
 
       {/* Testimonials */}
       <section className="py-12 px-4 bg-white">
-        <h2 className="text-3xl font-bold px-4 mb-8">
+        <h2 className="text-[48px] font-bold px-4 mb-8">
           {ProductConstants.happyCustomersTitle}
         </h2>
         <TestimonialSlider />
