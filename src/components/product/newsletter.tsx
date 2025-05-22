@@ -11,9 +11,9 @@ const outfit = localFont({
 export default function Newsletter() {
   return (
     <div className="flex justify-center w-full">
-      <section className="w-[1300px] h-[178px] mt-[200px] rounded-[20px] bg-black text-white py-9 px-6">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center">
-          <h3 className={`${outfit.className} w-[551px] h-[94px] text-[40px] leading-[45px] font-black tracking-normal mb-6 md:mb-0 -ml-[50px]`}>
+      <section className="w-[1392px] h-[178px] mt-[200px] bg-black text-white py-9 px-16 rounded-[20px]">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <h3 className={`${outfit.className} w-[551px] h-[94px] text-[40px] leading-[45px] font-black tracking-normal mb-6 md:mb-0`}>
             STAY UP TO DATE ABOUT
             <br />
             OUR LATEST OFFERS
