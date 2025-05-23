@@ -7,6 +7,8 @@ import Footer from "@/components/product/footer"
 import Newsletter from '@/components/product/newsletter'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 interface CartItem {
   id: string
@@ -17,7 +19,7 @@ interface CartItem {
   selectedSize?: string
   slug?: string
   description?: string
-  image?: string  // Add this line
+  image?: string
 }
 
 type ValidationError = {
@@ -30,6 +32,7 @@ export default function CheckoutPage() {
   const [discountCode, setDiscountCode] = useState('ZJ3OOFF')
   const [appliedDiscount, setAppliedDiscount] = useState(false)
   const [selectedShipping, setSelectedShipping] = useState('')
+  const [email, setEmail] = useState('') // Added missing email state
   const [personalInfo, setPersonalInfo] = useState({
     fullName: '',
     phoneNumber: '',
@@ -58,12 +61,13 @@ export default function CheckoutPage() {
   }
 
   const subtotal = calculateSubtotal()
-  const shippingFee = 1500 // $ fixed shipping
-  const tax = 129 // $ fixed tax
+  const shippingFee = 15.00 // Fixed shipping fee (was incorrectly 1500)
+  const tax = 1.29 // Fixed tax amount (was incorrectly 129)
   const total = subtotal + shippingFee + tax
 
   const applyDiscount = () => {
-    if (discountCode === 'Z.BOOFF') {
+    // Fixed discount code comparison
+    if (discountCode === 'ZJ3OOFF') {
       setAppliedDiscount(true)
       // Discount logic here
     }
@@ -100,6 +104,14 @@ export default function CheckoutPage() {
     return errors;
   }
 
+  // Newsletter form handler
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Handle newsletter subscription
+    console.log('Newsletter subscription:', email)
+    // Add your newsletter subscription logic here
+  }
+
   // Add this function before the return statement
   const validateForm = () => {
     return (
@@ -123,7 +135,7 @@ export default function CheckoutPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Personal Information */}
             <section>
-              <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2">Personnel informations</h2>
+              <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2">Personal Information</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
                 <div>
                   <label className="block text-sm font-bold mb-1">Full name</label>
@@ -136,7 +148,7 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold mb-1">Number phone</label>
+                  <label className="block text-sm font-bold mb-1">Phone Number</label>
                   <input 
                     type="tel" 
                     value={personalInfo.phoneNumber}
@@ -170,6 +182,7 @@ export default function CheckoutPage() {
                       value={personalInfo.city}
                       onChange={(e) => setPersonalInfo(prev => ({ ...prev, city: e.target.value }))}
                       className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                      required
                     />
                   </div>
                   <div>
@@ -179,6 +192,7 @@ export default function CheckoutPage() {
                       value={personalInfo.state}
                       onChange={(e) => setPersonalInfo(prev => ({ ...prev, state: e.target.value }))}
                       className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                      required
                     />
                   </div>
                 </div>
@@ -190,6 +204,7 @@ export default function CheckoutPage() {
                       value={personalInfo.zipCode}
                       onChange={(e) => setPersonalInfo(prev => ({ ...prev, zipCode: e.target.value }))}
                       className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                      required
                     />
                   </div>
                   <div>
@@ -199,6 +214,7 @@ export default function CheckoutPage() {
                       value={personalInfo.country}
                       onChange={(e) => setPersonalInfo(prev => ({ ...prev, country: e.target.value }))}
                       className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                      required
                     />
                   </div>
                 </div>
@@ -207,20 +223,20 @@ export default function CheckoutPage() {
 
             {/* Delivery Method */}
             <section>
-              <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2 my-8">Delivry method</h2>
+              <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2 my-8">Delivery Method</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button 
-                  onClick={() => setSelectedShipping('MAYSTRO DELIVRY')}
+                  onClick={() => setSelectedShipping('MAYSTRO DELIVERY')}
                   className={`p-4 border rounded-full flex items-center justify-center gap-2 transition-colors ${
-                    selectedShipping === 'MAYSTRO DELIVRY' 
+                    selectedShipping === 'MAYSTRO DELIVERY' 
                       ? 'border-black bg-gray-100' 
                       : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white">
-                   <img src="/images/maystro.png" />
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white overflow-hidden">
+                   <img src="/images/maystro.png" alt="Maystro" className="w-full h-full object-cover" />
                   </div>
-                  <span className="font-medium">MAYSTRO DELIVRY</span>
+                  <span className="font-medium">MAYSTRO DELIVERY</span>
                 </button>
 
                 <button 
@@ -231,8 +247,8 @@ export default function CheckoutPage() {
                       : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white">
-                    <img src="/images/yalidin.png" />
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white overflow-hidden">
+                    <img src="/images/yalidin.png" alt="Yalidine" className="w-full h-full object-cover" />
                   </div>
                   <span className="font-medium">YALIDINE EXPRESS</span>
                 </button>
@@ -245,11 +261,74 @@ export default function CheckoutPage() {
                       : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
-                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-black">
-                    <img src="/images/ZR.png" />
+                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-black overflow-hidden">
+                    <img src="/images/ZR.png" alt="ZR Express" className="w-full h-full object-cover" />
                   </div>
                   <span className="font-medium">ZR EXPRESS</span>
                 </button>
+              </div>
+            </section>
+
+            {/* Newsletter Section - Moved to separate component or positioned properly */}
+            <section className="relative w-full py-16 md:py-24 lg:py-32 bg-white overflow-hidden">
+              <div className="container mx-auto px-4 md:px-6">
+                <div className="relative flex items-center justify-center min-h-[600px]">
+                  {/* Left Model */}
+                  <div className="absolute left-0 top-0 hidden lg:block">
+                    <Image
+                      src="/images/male-model.png"
+                      alt="Male model in mustard coat"
+                      width={300}
+                      height={600}
+                      className="object-contain"
+                      priority
+                    />
+                  </div>
+
+                  {/* Right Model */}
+                  <div className="absolute right-0 top-0 hidden lg:block">
+                    <Image
+                      src="/images/female-model.png"
+                      alt="Female model in gray blazer"
+                      width={300}
+                      height={600}
+                      className="object-contain"
+                      priority
+                    />
+                  </div>
+
+                  {/* Center Content */}
+                  <div className="relative z-10 text-center max-w-2xl mx-auto px-4">
+                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-black mb-8 tracking-tight">
+                      Subscribe To Our Newsletter
+                    </h2>
+
+                    <p className="text-gray-600 text-base md:text-lg leading-relaxed mb-12 max-w-xl mx-auto">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Scelerisque duis ultrices sollicitudin aliquam
+                      sem. Scelerisque duis ultrices sollicitudin
+                    </p>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div className="relative max-w-md mx-auto">
+                        <Input
+                          type="email"
+                          placeholder="michael@ymail.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full px-6 py-4 text-left text-gray-500 bg-white border-0 border-b-2 border-gray-200 rounded-full focus:border-gray-400 focus:ring-0 text-lg placeholder:text-gray-400 shadow-[0_20px_25px_rgba(0,0,0,0.1)]"
+                          required
+                        />
+                      </div>
+
+                      <Button
+                        type="submit"
+                        className="bg-black hover:bg-gray-800 text-white px-14 py-5 rounded-full text-lg font-medium transition-colors duration-200 shadow-[0_10px_20px_rgba(0,0,0,0.2)]"
+                      >
+                        Subscribe Now
+                      </Button>
+                    </form>
+                  </div>
+                </div>
               </div>
             </section>
           </div>
@@ -340,7 +419,6 @@ export default function CheckoutPage() {
                   </div>
                 </div>
                 
-                {/* Replace the existing checkout button with this */}
                 <button 
                   onClick={() => {
                     const errors = validateCheckout();
