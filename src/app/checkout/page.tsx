@@ -117,148 +117,163 @@ export default function CheckoutPage() {
   return (
     <div>
       <ProductHeader/>
-      <div className="max-w-6xl mx-auto py-7 my-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left column - Forms (2/3 width) */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Personal Information */}
-            <section>
-              <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2">Personnel informations</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
-                <div>
-                  <label className="block text-sm font-bold mb-1">Full name</label>
-                  <input 
-                    type="text" 
-                    value={personalInfo.fullName}
-                    onChange={(e) => setPersonalInfo(prev => ({ ...prev, fullName: e.target.value }))}
-                    className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold mb-1">Number phone</label>
-                  <input 
-                    type="tel" 
-                    value={personalInfo.phoneNumber}
-                    onChange={(e) => setPersonalInfo(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                    className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                    required
-                  />
-                </div>
-              </div>
-            </section>
-
-            {/* Shipping Address */}
-            <section>
-              <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2">Shipping address</h2>
-              <div className="space-y-4 my-8">
-                <div>
-                  <label className="block text-sm font-bold mb-1">Street Address</label>
-                  <input 
-                    type="text" 
-                    value={personalInfo.streetAddress}
-                    onChange={(e) => setPersonalInfo(prev => ({ ...prev, streetAddress: e.target.value }))}
-                    className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="max-w-[1440px] mx-auto py-7 my-8 relative">
+        {/* Main content container with relative positioning */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left side - Personal Information */}
+          <div className="lg:col-span-8">
+            <h1 className="text-2xl font-bold mb-8">Personal Information</h1>
+            <div className="space-y-6">
+              {/* Personal Information */}
+              <section>
+                <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2">Personnel informations</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
                   <div>
-                    <label className="block text-sm font-bold mb-1">City</label>
+                    <label className="block text-sm font-bold mb-1">Full name</label>
                     <input 
                       type="text" 
-                      value={personalInfo.city}
-                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, city: e.target.value }))}
+                      value={personalInfo.fullName}
+                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, fullName: e.target.value }))}
                       className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                      required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold mb-1">State</label>
+                    <label className="block text-sm font-bold mb-1">Number phone</label>
                     <input 
-                      type="text" 
-                      value={personalInfo.state}
-                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, state: e.target.value }))}
+                      type="tel" 
+                      value={personalInfo.phoneNumber}
+                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, phoneNumber: e.target.value }))}
                       className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                      required
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              </section>
+
+              {/* Shipping Address */}
+              <section>
+                <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2">Shipping address</h2>
+                <div className="space-y-4 my-8">
                   <div>
-                    <label className="block text-sm font-bold mb-1">Zip Code</label>
+                    <label className="block text-sm font-bold mb-1">Street Address</label>
                     <input 
                       type="text" 
-                      value={personalInfo.zipCode}
-                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, zipCode: e.target.value }))}
+                      value={personalInfo.streetAddress}
+                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, streetAddress: e.target.value }))}
                       className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                      required
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-bold mb-1">Country</label>
-                    <input 
-                      type="text" 
-                      value={personalInfo.country}
-                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, country: e.target.value }))}
-                      className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold mb-1">City</label>
+                      <input 
+                        type="text" 
+                        value={personalInfo.city}
+                        onChange={(e) => setPersonalInfo(prev => ({ ...prev, city: e.target.value }))}
+                        className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold mb-1">State</label>
+                      <input 
+                        type="text" 
+                        value={personalInfo.state}
+                        onChange={(e) => setPersonalInfo(prev => ({ ...prev, state: e.target.value }))}
+                        className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold mb-1">Zip Code</label>
+                      <input 
+                        type="text" 
+                        value={personalInfo.zipCode}
+                        onChange={(e) => setPersonalInfo(prev => ({ ...prev, zipCode: e.target.value }))}
+                        className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold mb-1">Country</label>
+                      <input 
+                        type="text" 
+                        value={personalInfo.country}
+                        onChange={(e) => setPersonalInfo(prev => ({ ...prev, country: e.target.value }))}
+                        className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </section>
+              </section>
 
-            {/* Delivery Method */}
-            <section>
-              <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2 my-8">Delivry method</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button 
-                  onClick={() => setSelectedShipping('MAYSTRO DELIVRY')}
-                  className={`p-4 border rounded-full flex items-center justify-center gap-2 transition-colors ${
-                    selectedShipping === 'MAYSTRO DELIVRY' 
-                      ? 'border-black bg-gray-100' 
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white">
-                   <img src="/images/maystro.png" />
-                  </div>
-                  <span className="font-medium">MAYSTRO DELIVRY</span>
-                </button>
+              {/* Delivery Method */}
+              <section>
+                <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2 my-8">Delivry method</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-[36px] mb-[188px]">
+                  <button 
+                    onClick={() => setSelectedShipping('MAYSTRO DELIVRY')}
+                    className={`w-[259px] h-[58px] rounded-[32px] px-[15px] py-[10px] border-2 flex items-center gap-2 ${
+                      selectedShipping === 'MAYSTRO DELIVRY' 
+                        ? 'border-black bg-black text-white' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <div className={`w-[38px] h-[38px] rounded-[32px] border-2 flex items-center justify-center ${
+                      selectedShipping === 'MAYSTRO DELIVRY'
+                        ? 'border-white'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}>
+                      <img src="/images/maystro.png" className="w-[38px] h-[38px] rounded-[32px]" />
+                    </div>
+                    <span className="font-medium">MAYSTRO DELIVRY</span>
+                  </button>
 
-                <button 
-                  onClick={() => setSelectedShipping('YALIDINE EXPRESS')}
-                  className={`p-4 border rounded-full flex items-center justify-center gap-2 transition-colors ${
-                    selectedShipping === 'YALIDINE EXPRESS' 
-                      ? 'border-black bg-gray-100' 
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white">
-                    <img src="/images/yalidin.png" />
-                  </div>
-                  <span className="font-medium">YALIDINE EXPRESS</span>
-                </button>
+                  <button 
+                    onClick={() => setSelectedShipping('YALIDINE EXPRESS')}
+                    className={`w-[259px] h-[58px] rounded-[32px] px-[15px] py-[10px] border flex items-center gap-2 ${
+                      selectedShipping === 'YALIDINE EXPRESS' 
+                        ? 'border-black bg-black text-white' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <div className={`w-[38px] h-[38px] rounded-[32px] border flex items-center justify-center ${
+                      selectedShipping === 'YALIDINE EXPRESS'
+                        ? 'border-white'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}>
+                      <img src="/images/yalidin.png" className="w-[38px] h-[38px] rounded-[32px]" />
+                    </div>
+                    <span className="font-medium">YALIDINE EXPRESS</span>
+                  </button>
 
-                <button 
-                  onClick={() => setSelectedShipping('ZR EXPRESS')}
-                  className={`p-4 border rounded-full flex items-center justify-center gap-2 transition-colors ${
-                    selectedShipping === 'ZR EXPRESS' 
-                      ? 'border-black bg-gray-100' 
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-black">
-                    <img src="/images/ZR.png" />
-                  </div>
-                  <span className="font-medium">ZR EXPRESS</span>
-                </button>
-              </div>
-            </section>
+                  <button 
+                    onClick={() => setSelectedShipping('ZR EXPRESS')}
+                    className={`w-[259px] h-[58px] rounded-[32px] px-[15px] py-[10px] border flex items-center gap-2 ${
+                      selectedShipping === 'ZR EXPRESS' 
+                        ? 'border-black bg-black text-white' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <div className={`w-[38px] h-[38px] rounded-[32px] border flex items-center justify-center ${
+                      selectedShipping === 'ZR EXPRESS'
+                        ? 'border-white'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}>
+                      <img src="/images/ZR.png" className="w-[38px] h-[38px] rounded-[32px]" />
+                    </div>
+                    <span className="font-medium">ZR EXPRESS</span>
+                  </button>
+                </div>
+              </section>
+            </div>
           </div>
-          
-          {/* Right column - Order Summary (1/3 width) */}
-          <div className="lg:col-span-1 mx-auto">
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              {/* Your Orders */}
-              <div className="mb-6">
+
+          {/* Right side - Order Summary */}
+          <div className="lg:col-span-4">
+            <div className=" w-[341px] h-[686px] top-[213px] left-[1075px] bg-white rounded-[16px] border border-gray-200 p-[32px_21px] space-y-[25px]">
+              <div>
                 <h2 className="text-lg font-bold mb-4">Your orders</h2>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {checkoutItems.map((item) => (
@@ -339,15 +354,13 @@ export default function CheckoutPage() {
                     <span>$ {total.toFixed(2)}</span>
                   </div>
                 </div>
-                
-                {/* Replace the existing checkout button with this */}
+
                 <button 
                   onClick={() => {
                     const errors = validateCheckout();
                     if (errors.length === 0) {
                       router.push('/checkout/success');
                     } else {
-                      // Store errors in session storage to show them on the failed page
                       sessionStorage.setItem('checkoutErrors', JSON.stringify(errors));
                       router.push('/checkout/failed');
                     }
@@ -356,7 +369,7 @@ export default function CheckoutPage() {
                 >
                   Checkout
                 </button>
-                
+
                 <div className="text-center mt-4">
                   <Link href="/products" className="text-sm text-gray-600 hover:text-gray-800">
                     Continue Shopping
