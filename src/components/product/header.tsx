@@ -4,6 +4,8 @@ import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { ShoppingCart, User, Search, ChevronDown } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
+import { icons } from "@/lib/icons"; // adjust path as needed
+import Image from "next/image"
 
 export default function Header() {
   const { cart } = useCart()
@@ -46,15 +48,15 @@ return (
       <div className="flex items-center gap-5">
         <div className="relative">
           <Link href="/cart">
-            <ShoppingCart className="h-6 w-6 cursor-pointer" />
+            <Image alt="cart"  src={icons.cart} width={18.84} height={18}className="cursor-pointer" />
           </Link>
           {totalItems > 0 && (
-            <span className="absolute -top-2 -right-2 bg-black text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-              {totalItems}
+            <span className="absolute -top-2 -right-2 bg-[#B4E907] text-black text-[10px] font-bold w-[14px] h-[14px] rounded-full flex items-center justify-center">
+           {totalItems}
             </span>
           )}
         </div>
-        <User className="h-6 w-6 cursor-pointer" />
+        {/* <User className="h-6 w-6 cursor-pointer" /> */}
       </div>
     </header>
   )

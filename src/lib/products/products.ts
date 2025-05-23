@@ -118,5 +118,121 @@ export const products: Product[] = [
       }
     ]
   },
+  {
+    id: "aero",
+    slug: "hands-aero",
+    name: "HANDS AERO",
+    description: '27" 4K UHD IPS Monitor',
+    price: "$399",
+    originalPrice: "$449",
+    discount: "-11%",
+    rating: 4.5,
+    reviews: 89,
+    screenSize: '27"',
+    colors: [
+      { name: "Black", value: "#333333", active: true },
+      { name: "White", value: "#FFFFFF", active: false },
+    ],
+    sizes: [
+      { name: '24"', active: false },
+      { name: '27"', active: true },
+    ],
+    details: [
+      "Resolution: 3840 x 2160 (4K UHD)",
+      "Refresh Rate: 60Hz",
+      "Response Time: 5ms",
+      "Panel Type: IPS",
+      "Color Gamut: 100% sRGB",
+      "Brightness: 350 nits",
+      "Connectivity: 2x HDMI 2.0, 1x DisplayPort 1.4, USB-C",
+      "VESA Mount Compatible: 100x100mm",
+      "Built-in Speakers: No",
+      "Eye Care Technology: Flicker-free, Low Blue Light"
+    ],
+    reviewList: [
+      {
+        id: 1,
+        name: "David R.",
+        rating: 4,
+        date: "October 1, 2023",
+        content: "Great monitor for the price. Perfect for my office setup."
+      },
+      {
+        id: 2,
+        name: "Emily W.",
+        rating: 5,
+        date: "October 10, 2023",
+        content: "The color accuracy is spot on. Highly recommend for designers."
+      }
+    ],
+    faqs: [
+      {
+        question: "Does it support HDR?",
+        answer: "Yes, it supports HDR10 content."
+      },
+      {
+        question: "Is this good for gaming?",
+        answer: "While it's not specifically a gaming monitor, the response time is decent for casual gaming."
+      }
+    ]
+  },
+  {
+    id: "nova",
+    slug: "hands-nova",
+    name: "HANDS NOVA",
+    description: '32" QHD 144Hz Gaming Monitor',
+    price: "$599",
+    originalPrice: "$699",
+    discount: "-14%",
+    rating: 4.7,
+    reviews: 145,
+    screenSize: '32"',
+    colors: [
+      { name: "Black", value: "#333333", active: true },
+      { name: "Blue", value: "#0000FF", active: false },
+    ],
+    sizes: [
+      { name: '27"', active: false },
+      { name: '32"', active: true },
+    ],
+    details: [
+      "Resolution: 2560 x 1440 (QHD)",
+      "Refresh Rate: 144Hz",
+      "Response Time: 1ms (MPRT)",
+      "Panel Type: Fast IPS",
+      "Adaptive Sync: FreeSync Premium",
+      "Brightness: 400 nits",
+      "Connectivity: 2x HDMI 2.1, 1x DisplayPort 1.4, USB Hub",
+      "VESA Mount Compatible: 100x100mm",
+      "RGB Lighting: Customizable rear lighting",
+      "Gaming Features: Black Stabilizer, Crosshair Overlay"
+    ],
+    reviewList: [
+      {
+        id: 1,
+        name: "Chris P.",
+        rating: 5,
+        date: "November 5, 2023",
+        content: "The colors are vibrant and the refresh rate is perfect for gaming."
+      },
+      {
+        id: 2,
+        name: "Anna S.",
+        rating: 4,
+        date: "November 12, 2023",
+        content: "Great monitor but wish it had built-in speakers."
+      }
+    ],
+    faqs: [
+      {
+        question: "Is this G-Sync compatible?",
+        answer: "Yes, it works with both FreeSync and G-Sync compatible systems."
+      },
+      {
+        question: "Does it have speakers?",
+        answer: "No, this model focuses on gaming performance and doesn't include speakers."
+      }
+    ]
+  }
   
 ];

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { medium } from "@/lib/fonts";
-import { RootProvider } from "@/components/providers/RootProvider";
+// import { RootProvider } from "@/components/providers/RootProvider";
 import { CartProvider } from '@/context/cart-context'
+import Banner from "@/components/Banner";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -18,6 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${medium.variable} antialiased`}>
         <CartProvider>
+          <Banner/>
           {children}
         </CartProvider>
       </body>
