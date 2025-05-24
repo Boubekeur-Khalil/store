@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Mail } from "lucide-react"
 import localFont from 'next/font/local'
+import Image from 'next/image'
 
 const outfit = localFont({
   src: '../../../public/fonts/Outfit-Black.ttf',
@@ -21,13 +21,12 @@ export default function Newsletter() {
 
           <form className="w-full max-w-md space-y-3">
             <div className="relative">
-              <Mail 
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10 pointer-events-none" 
-                size={20} 
-                color="black" 
-                strokeWidth={2}
-                stroke="currentColor"
-                fill="none"
+              <Image
+                src="/assets/icons/email-icon.svg"
+                alt="Mail"
+                width={20}
+                height={20}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10 pointer-events-none"
               />
               <Input
                 type="email"

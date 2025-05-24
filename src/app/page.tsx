@@ -8,12 +8,13 @@ import Footer from "@/components/product/footer"
 import { ProductConstants } from "../utils/constants"
 import { ProductImages } from "./products/[slug]/images"
 import { products } from "@/lib/products/products"
+import CountUp from "@/components/common/CountUp"
 
 export default function Home() {
-  // Get first 4 products for each section
+  /*// Get first 4 products for each section
   const newArrivals = products.slice(0, 4)
   const topSelling = products.slice(4, 8)
-
+*/
   return (
     <div className="flex flex-col min-h-screen">
       <ProductHeader />
@@ -34,17 +35,30 @@ export default function Home() {
           <p className="text-sm leading-relaxed mb-6">
             {ProductConstants.heroDescription}
           </p>
-          <Button asChild className="rounded-full bg-white text-black hover:bg-gray-100">
+          <Button asChild className="rounded-full bg-white text-black hover:bg-gray-100 w-[218px] h-[52px] text-[16px]">
             <Link href="/products">{ProductConstants.shopNowText}</Link>
           </Button>
 
           <div className="flex gap-10 mt-20">
-            {ProductConstants.stats.map((stat, index) => (
-              <div key={index}>
-                <div className="text-3xl font-bold mb-1">{stat.value}</div>
-                <div className="text-xs opacity-80">{stat.label}</div>
-              </div>
-            ))}
+            {ProductConstants.stats.map((stat, index) => {
+              // Extract numeric value by removing non-digit characters
+              const numericValue = parseInt(stat.value.replace(/\D/g, ''));
+              
+              return (
+                <div key={index}>
+                  <div className="text-4xl font-bold mb-1">
+                    <CountUp 
+                      from={0} 
+                      to={numericValue} 
+                      duration={2.5} 
+                      delay={0.5} 
+                    />
+                    {stat.value.includes('+') ? '+' : ''}
+                  </div>
+                  <div className="text-xs opacity-80">{stat.label}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

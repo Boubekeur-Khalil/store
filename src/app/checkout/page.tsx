@@ -33,6 +33,7 @@ export default function CheckoutPage() {
   const [appliedDiscount, setAppliedDiscount] = useState(false)
   const [selectedShipping, setSelectedShipping] = useState('')
   const [email, setEmail] = useState('') // Added missing email state
+  const [newsletterEmail, setNewsletterEmail] = useState('') // Separate email state for newsletter
   const [personalInfo, setPersonalInfo] = useState({
     fullName: '',
     phoneNumber: '',
@@ -112,6 +113,17 @@ export default function CheckoutPage() {
     // Add your newsletter subscription logic here
   }
 
+  // Newsletter form handler for the checkout page newsletter
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Handle newsletter subscription
+    console.log('Newsletter subscription:', newsletterEmail)
+    // Add your newsletter subscription logic here
+    // You might want to show a success message or clear the form
+    setNewsletterEmail('')
+    alert('Thank you for subscribing to our newsletter!')
+  }
+
   // Add this function before the return statement
   const validateForm = () => {
     return (
@@ -127,7 +139,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div>
+    <div className="relative overflow-x-hidden">
       <ProductHeader/>
       <div className="max-w-6xl mx-auto py-7 my-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -268,70 +280,9 @@ export default function CheckoutPage() {
                 </button>
               </div>
             </section>
-
-            {/* Newsletter Section - Moved to separate component or positioned properly */}
-            <section className="relative w-full py-16 md:py-24 lg:py-32 bg-white overflow-hidden">
-              <div className="container mx-auto px-4 md:px-6">
-                <div className="relative flex items-center justify-center min-h-[600px]">
-                  {/* Left Model */}
-                  <div className="absolute left-0 top-0 hidden lg:block">
-                    <Image
-                      src="/images/male-model.png"
-                      alt="Male model in mustard coat"
-                      width={300}
-                      height={600}
-                      className="object-contain"
-                      priority
-                    />
-                  </div>
-
-                  {/* Right Model */}
-                  <div className="absolute right-0 top-0 hidden lg:block">
-                    <Image
-                      src="/images/female-model.png"
-                      alt="Female model in gray blazer"
-                      width={300}
-                      height={600}
-                      className="object-contain"
-                      priority
-                    />
-                  </div>
-
-                  {/* Center Content */}
-                  <div className="relative z-10 text-center max-w-2xl mx-auto px-4">
-                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-black mb-8 tracking-tight">
-                      Subscribe To Our Newsletter
-                    </h2>
-
-                    <p className="text-gray-600 text-base md:text-lg leading-relaxed mb-12 max-w-xl mx-auto">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Scelerisque duis ultrices sollicitudin aliquam
-                      sem. Scelerisque duis ultrices sollicitudin
-                    </p>
-
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                      <div className="relative max-w-md mx-auto">
-                        <Input
-                          type="email"
-                          placeholder="michael@ymail.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="w-full px-6 py-4 text-left text-gray-500 bg-white border-0 border-b-2 border-gray-200 rounded-full focus:border-gray-400 focus:ring-0 text-lg placeholder:text-gray-400 shadow-[0_20px_25px_rgba(0,0,0,0.1)]"
-                          required
-                        />
-                      </div>
-
-                      <Button
-                        type="submit"
-                        className="bg-black hover:bg-gray-800 text-white px-14 py-5 rounded-full text-lg font-medium transition-colors duration-200 shadow-[0_10px_20px_rgba(0,0,0,0.2)]"
-                      >
-                        Subscribe Now
-                      </Button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </section>
           </div>
+
+          
           
           {/* Right column - Order Summary (1/3 width) */}
           <div className="lg:col-span-1 mx-auto">
@@ -445,7 +396,73 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-      <Newsletter />
+
+      {/* Newsletter Section - Full Width */}
+      <section className="relative w-screen overflow-hidden bg-white" style={{ marginLeft: 'calc(50% - 50vw)', marginRight: 'calc(50% - 50vw)' }}>
+        <div className="px-6 py-12 md:py-16">
+          <div className="relative flex flex-col items-center">
+            {/* Left Model */}
+            <div className="absolute left-50 bottom-0 hidden lg:block" style={{ maxHeight: '300px', opacity: '0.8' }}>
+              <Image
+                src="/images/male-model.png"
+                alt="Male model in mustard coat"
+                width={150}
+                height={300}
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            {/* Right Model */}
+            <div className="absolute right-50 bottom-0 hidden lg:block" style={{ maxHeight: '300px', opacity: '0.8' }}>
+              <Image
+                src="/images/female-model.png"
+                alt="Female model in gray blazer"
+                width={150}
+                height={300}
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            {/* Center Content */}
+            <div className="relative z-10 text-center max-w-xl mx-auto px-4">
+              <h2 className="text-2xl md:text-3xl font-semibold text-black mb-4 tracking-tight">
+                Stay Updated with Our Latest Offers
+              </h2>
+
+              <p className="text-gray-600 text-sm font-medium md:text-base leading-relaxed mb-6 max-w-md mx-auto">
+                Get exclusive deals, new arrivals, and fashion tips delivered straight to your inbox. Don't miss out on special promotions!
+              </p>
+
+              <form onSubmit={handleNewsletterSubmit} className="space-y-4">
+                <div className="relative max-w-md mx-auto">
+                  <Input
+                    type="email"
+                    placeholder="Enter your email address"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    className="w-full px-4 py-3 text-left text-gray-700 bg-white border border-gray-300 rounded-full focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 text-base placeholder:text-gray-400 shadow-sm transition-all duration-200 box-shadow-[0_10px_10px_rgba(0,0,0,0.1)]"
+                    required
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-full text-base font-medium transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 cursor-pointer"
+                >
+                  Subscribe Now
+                </Button>
+              </form>
+
+              <p className="text-xs text-gray-500 mt-4">
+                By subscribing, you agree to receive marketing emails. You can unsubscribe at any time.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+            
       <Footer/>
     </div>
   )
