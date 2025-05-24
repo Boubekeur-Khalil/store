@@ -9,6 +9,7 @@ import ProductHeader from "@/components/product/header"
 import Footer from "@/components/product/footer"
 import { ProductIcons } from './[slug]/icons'
 import Newsletter from '@/components/product/newsletter'
+import * as Slider from "@radix-ui/react-slider"
 
 interface Filters {
   sizes: string[]
@@ -79,23 +80,81 @@ export default function ProductFilterPage() {
           <div className="w-full lg:w-64 space-y-8">
             {/* Price Filter */}
             <div className="border-b pb-6">
-              <h3 className="font-semibold mb-4">Price Range</h3>
-              <div className="space-y-4">
-                <input
-                  type="range"
-                  min="0"
-                  max="1000"
-                  step="50"
-                  value={filters.priceRange[1]}
-                  onChange={e => setFilters(prev => ({
-                    ...prev,
-                    priceRange: [prev.priceRange[0], parseInt(e.target.value)]
-                  }))}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-sm">
-                  <span>${filters.priceRange[0]}</span>
-                  <span>${filters.priceRange[1]}</span>
+              <h3 className="font-semibold mb-4">
+                Price Range: <span className="text-gray-900">{filters.priceRange[0]} DZD - {filters.priceRange[1]} DZD</span>
+              </h3>
+              <div className="mt-6 px-2">
+                {/* Replace the ElasticSlider with an improved slider */}
+                <div className="relative pt-5">
+                  <div className="absolute -top-2 inset-x-0 flex justify-between text-xs text-gray-500">
+                    <span>0 DZD</span>
+                    <span>1000 DZD</span>
+                  </div>
+                  <Slider.Root
+                    className="relative flex w-full touch-none select-none items-center"
+                    defaultValue={filters.priceRange}
+                    value={filters.priceRange}
+                    max={1000}
+                    step={10}
+                    minStepsBetweenThumbs={1}
+                    onValueChange={(value) => setFilters(prev => ({
+                      ...prev,
+                      priceRange: value as [number, number]
+                    }))}
+                    aria-label="Price Range"
+                  >
+                    <Slider.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-gray-200">
+                      <Slider.Range className="absolute h-full bg-black" />
+                    </Slider.Track>
+                    <Slider.Thumb
+                      className="block h-5 w-5 rounded-full border border-black bg-white shadow-md hover:shadow-lg focus:outline-none focus:ring focus:ring-black"
+                      aria-label="Minimum price"
+                    />
+                    <Slider.Thumb
+                      className="block h-5 w-5 rounded-full border border-black bg-white shadow-md hover:shadow-lg focus:outline-none focus:ring focus:ring-black"
+                      aria-label="Maximum price"
+                    />
+                  </Slider.Root>
+                </div>
+
+                {/* Price labels */}
+                <div className="mt-6 flex justify-between items-center">
+                  <div className="flex items-center">
+                    <span className="text-sm text-gray-600 mr-2">Min:</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max={filters.priceRange[1]}
+                      value={filters.priceRange[0]}
+                      onChange={(e) => {
+                        const value = Math.min(parseInt(e.target.value) || 0, filters.priceRange[1]);
+                        setFilters(prev => ({
+                          ...prev,
+                          priceRange: [value, prev.priceRange[1]]
+                        }));
+                      }}
+                      className="w-20 px-2.5 py-1.5 border border-gray-300 rounded-md bg-white text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                      aria-label="Minimum price input"
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-sm text-gray-600 mr-2">Max:</span>
+                    <input
+                      type="number"
+                      min={filters.priceRange[0]}
+                      max="1000"
+                      value={filters.priceRange[1]}
+                      onChange={(e) => {
+                        const value = Math.max(parseInt(e.target.value) || 0, filters.priceRange[0]);
+                        setFilters(prev => ({
+                          ...prev,
+                          priceRange: [prev.priceRange[0], value]
+                        }));
+                      }}
+                      className="w-20 px-2.5 py-1.5 border border-gray-300 rounded-md bg-white text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                      aria-label="Maximum price input"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -103,9 +162,16 @@ export default function ProductFilterPage() {
             {/* Size Filter */}
             <div className="border-b pb-6">
               <h3 className="font-semibold mb-4">Screen Sizes</h3>
-              <div className="space-y-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {allSizes.map(size => (
-                  <label key={size} className="flex items-center space-x-2">
+                  <label 
+                    key={size} 
+                    className={`flex items-center justify-center p-2 rounded-md border cursor-pointer transition-all ${
+                      filters.sizes.includes(size) 
+                        ? 'bg-blue-100 border-blue-500 text-blue-700 font-medium shadow-sm' 
+                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                    }`}
+                  >
                     <input
                       type="checkbox"
                       checked={filters.sizes.includes(size)}
@@ -115,9 +181,16 @@ export default function ProductFilterPage() {
                           : filters.sizes.filter(s => s !== size)
                         setFilters(prev => ({ ...prev, sizes: newSizes }))
                       }}
-                      className="h-4 w-4"
+                      className="sr-only" // Hide the default checkbox
                     />
-                    <span>{size}</span>
+                    <div className="flex items-center">
+                      {filters.sizes.includes(size) && (
+                        <svg className="w-3.5 h-3.5 mr-1.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                      <span>{size}</span>
+                    </div>
                   </label>
                 ))}
               </div>

@@ -4,6 +4,8 @@ import { medium } from "@/lib/fonts";
 // import { RootProvider } from "@/components/providers/RootProvider";
 import { CartProvider } from '@/context/cart-context'
 import Banner from "@/components/Banner";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,6 +23,7 @@ export default function RootLayout({
         <CartProvider>
           <Banner/>
           {children}
+          <ToastContainer />
         </CartProvider>
       </body>
     </html>

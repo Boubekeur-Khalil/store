@@ -11,35 +11,72 @@ import { Product } from "@/lib/types/product"
 import ProductHeader from "@/components/product/header"
 import Footer from "@/components/product/footer"
 import Newsletter from '@/components/product/newsletter'
+import { toast } from 'react-toastify'
+import { useCart } from "@/hooks/use-cart"
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const { cart: cartItems, addToCart, removeFromCart } = useCart()
 
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart')
-    if (savedCart) {
-      setCartItems(JSON.parse(savedCart))
-    }
     setLoading(false)
   }, [])
 
-  const removeFromCart = (productId: string) => {
-    const updatedCart = cartItems.filter(item => item.id !== productId)
-    setCartItems(updatedCart)
-    localStorage.setItem('cart', JSON.stringify(updatedCart))
+  const handleRemoveFromCart = (productId: string) => {
+    const itemToRemove = cartItems.find(item => item.id === productId)
+    
+    if (itemToRemove) {
+      const productImage = ProductImages.products[itemToRemove.slug as keyof typeof ProductImages.products]?.main || 
+        ProductImages.placeholder
+        
+      removeFromCart(productId)
+      
+      toast.error(
+        <div className="flex items-center gap-3">
+          <div className="relative w-10 h-10 rounded-full overflow-hidden border border-gray-200">
+            <Image
+              src={productImage}
+              alt={itemToRemove.name}
+              fill
+              className="object-cover"
+            />
+          </div>
+          <div>
+            <p className="font-medium">{itemToRemove.name} removed from cart</p>
+          </div>
+        </div>,
+        {
+          position: "bottom-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          className: "rounded-xl",
+        }
+      )
+    }
   }
 
   const updateQuantity = (productId: string, newQuantity: number) => {
-    const updatedCart = cartItems.map(item => {
-      if (item.id === productId) {
-        return { ...item, quantity: newQuantity }
-      }
-      return item
+    const product = cartItems.find(item => item.id === productId)
+    if (!product) return
+
+    // If quantity is 0, remove item
+    if (newQuantity <= 0) {
+      handleRemoveFromCart(productId)
+      return
+    }
+    
+    // First remove the item
+    removeFromCart(productId)
+    
+    // Then add it back with new quantity
+    addToCart({
+      ...product,
+      quantity: newQuantity
     })
-    setCartItems(updatedCart)
-    localStorage.setItem('cart', JSON.stringify(updatedCart))
   }
 
   const calculateTotal = () => {
@@ -71,10 +108,15 @@ export default function CartPage() {
         <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
         
         {cartItems.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-xl mb-4">Your cart is empty</p>
+          <div className="text-center py-12 flex flex-col items-center justify-center">
+            <Image
+              src="/images/empty-cart.png"
+              alt="Empty Cart"
+              width={200}
+              height={200}
+            />
             <Link href="/products">
-              <Button className="bg-black text-white hover:bg-gray-800">
+              <Button className="bg-black text-white hover:bg-gray-800 cursor-pointer">
                 Continue Shopping
               </Button>
             </Link>
@@ -121,8 +163,8 @@ export default function CartPage() {
                           </div>
                           <Button
                             variant="link"
-                            className="text-red-600"
-                            onClick={() => removeFromCart(product.id)}
+                            className="text-red-600 cursor-pointer"
+                            onClick={() => handleRemoveFromCart(product.id)}
                           >
                             Remove
                           </Button>

@@ -5,7 +5,7 @@ import { ProductImages } from "@/app/products/[slug]/images"
 
 export default function ProductGrid() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-16">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-16 ml-5 mr-5">
       {products.map((product) => {
         const productImage = ProductImages.products[product.slug as keyof typeof ProductImages.products]?.main || ProductImages.placeholder
         
