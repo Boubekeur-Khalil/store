@@ -5,55 +5,78 @@ import { use } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import ProductGrid from "@/components/product/product-grid"
-import Newsletter from "@/components/product/newsletter"
-import ProductHeader from "@/components/product/header"
-import { products } from "@/lib/products/products"
+import Newsletter from "@/components/section/newsletter"
+import ProductHeader from "@/components/section/header"
 import { useState } from "react"
 import Footer from '@/components/product/footer'
-import { ProductConstants } from '../../../utils/constants'
+import { LandingPageConstants } from '../../../utils/constants'
 import { ProductIcons } from './icons'
-import { ProductImages } from './images'
 import { useCart } from "@/hooks/use-cart"
+import { useProducts, useReviews } from "@/hooks/hooks"
+import { useReview } from "@/hooks/hooks"
+import { ReviewRequest } from "@/lib/types/review"
+
 
 export default function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params)
-  const product = products.find(p => p.slug === resolvedParams.slug)
+  const { products, loading, error } = useProducts()
   const { addToCart } = useCart()
+  const product = products.find(p => p.slug === resolvedParams.slug)
+  const { submitReview, loading: reviewLoading, error: reviewError } = useReview(product?.id.toString() || '')
+  const { reviews, loading: reviewsLoading, error: reviewsError } = useReviews(product?.id.toString() || '')
+
+  const [quantity, setQuantity] = useState(LandingPageConstants.defaultQuantity)
+  const [selectedVariant, setSelectedVariant] = useState<number>(0)
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [reviewForm, setReviewForm] = useState<ReviewRequest>({
+    name: '',
+    email: '',
+    rating: 5,
+    comment: ''
+  })
 
   const handleAddToCart = () => {
     if (!product) return
     
-    const selectedColor = product.colors[activeColorIndex]?.name
-    const selectedSize = product.sizes[activeSizeIndex]?.name
-
     addToCart({
       ...product,
-      quantity: quantity,
-      selectedColor,
-      selectedSize
+      quantity,
+      selectedVariant: product.variants[selectedVariant]
     })
   }
   
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>
+  }
+
+  if (error) {
+    return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>
+  }
+
   if (!product) {
     return notFound()
   }
 
-  // Get product images from images.ts
-  const productImages = ProductImages.products[product.slug as keyof typeof ProductImages.products] || {
-    main: ProductImages.placeholder,
-    gallery: []
-  }
-
-  const [quantity, setQuantity] = useState(ProductConstants.defaultQuantity)
-  const [activeColorIndex, setActiveColorIndex] = useState(
-    product.colors.findIndex(color => color.active)
-  )
-  const [activeSizeIndex, setActiveSizeIndex] = useState(
-    product.sizes.findIndex(size => size.active)
-  )
+  const primaryImage = product.images.find(img => img.is_primary)?.image || '/placeholder.png'
 
   const decreaseQuantity = () => quantity > 1 && setQuantity(quantity - 1)
   const increaseQuantity = () => setQuantity(quantity + 1)
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await submitReview(reviewForm)
+      setShowReviewForm(false)
+      setReviewForm({
+        name: '',
+        email: '',
+        rating: 5,
+        comment: ''
+      })
+    } catch (error) {
+      console.error('Failed to submit review:', error)
+    }
+  }
 
   return (
     <div className="bg-white">
@@ -65,7 +88,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
           <div className="w-full lg:w-1/2 lg:pr-10">
             <div className="rounded-xl overflow-hidden mb-5">
               <Image
-                src={productImages.main}
+                src={primaryImage}
                 alt={product.name}
                 width={600}
                 height={600}
@@ -75,13 +98,13 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
             </div>
             
             {/* Image Gallery */}
-            {productImages.gallery.length > 0 && (
+            {product.images.length > 1 && (
               <div className="grid grid-cols-3 gap-4">
-                {productImages.gallery.map((image, index) => (
+                {product.images.filter(img => !img.is_primary).map((image, index) => (
                   <div key={index} className="border rounded-lg overflow-hidden">
                     <Image
-                      src={image}
-                      alt={`${product.name} view ${index + 1}`}
+                      src={image.image}
+                      alt={image.alt_text}
                       width={200}
                       height={200}
                       className="w-full h-auto object-cover"
@@ -99,60 +122,55 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
               <div className="stars text-xl">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <span key={`star-${i}`}>
-                    {ProductIcons.star(i < Math.floor(product.rating))}
+                    {ProductIcons.star(i < Math.floor(parseFloat(product.average_rating)))}
                   </span>
                 ))}
-                <span className="ml-1 text-base">{product.rating}</span>
+                <span className="ml-1 text-base">{product.average_rating}</span>
               </div>
             </div>
 
             <div className="text-sm text-gray-500 mb-5">{product.reviews} reviews</div>
 
             <div className="flex items-center mb-5">
-              <span className="text-2xl font-bold mr-4">{product.price}</span>
-              <span className="text-lg text-gray-400 line-through mr-3">{product.originalPrice}</span>
-              {product.discount && (
-                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">{product.discount}</span>
+              <span className="text-2xl font-bold mr-4">{product.current_price}</span>
+              <span className="text-lg text-gray-400 line-through mr-3">{product.price}</span>
+              {product.is_sale && (
+                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">Sale</span>
               )}
             </div>
 
-            <p className="text-gray-600 mb-8 leading-relaxed">{product.description}</p>
+            <div 
+              className="text-gray-600 mb-8 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: product.description }}
+            />
 
-            {/* Color Options */}
-            <div className="mb-8">
-              <div className="font-medium mb-4">Choose Color</div>
-              <div className="flex gap-3">
-                {product.colors.map((color, index) => (
-                  <button
-                    key={color.name}
-                    className={`cursor-pointer w-8 h-8 rounded-full ${index === activeColorIndex ? "ring-2 ring-black ring-offset-2" : ""}`}
-                    style={{ backgroundColor: color.value }}
-                    onClick={() => setActiveColorIndex(index)}
-                    aria-label={`Select ${color.name} color`}
-                  />
-                ))}
+            {/* Variants */}
+            {product.has_variants && product.variants.length > 0 && (
+              <div className="mb-8">
+                <div className="font-medium mb-4">Available Variants</div>
+                <div className="grid grid-cols-2 gap-4">
+                  {product.variants.map((variant, index) => (
+                    <button
+                      key={variant.id}
+                      className={`p-4 border rounded-lg ${
+                        index === selectedVariant
+                          ? "border-black bg-gray-50"
+                          : "border-gray-200"
+                      }`}
+                      onClick={() => setSelectedVariant(index)}
+                    >
+                      <div className="font-medium">{variant.sku}</div>
+                      <div className="text-sm text-gray-500">
+                        Price: {variant.final_price}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Stock: {variant.stock_quantity}
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-
-            {/* Size Options */}
-            <div className="mb-8">
-              <div className="font-medium mb-4 ">Choose Size</div>
-              <div className="flex gap-3 ">
-                {product.sizes.map((size, index) => (
-                  <button
-                    key={size.name}
-                    className={`cursor-pointer w-12 h-12 rounded-lg border  ${
-                      index === activeSizeIndex
-                        ? "bg-black text-white border-black"
-                        : "bg-white text-black border-gray-200"
-                    }`}
-                    onClick={() => setActiveSizeIndex(index)}
-                  >
-                    {size.name}
-                  </button>
-                ))}
-              </div>
-            </div>
+            )}
 
             {/* Quantity Selector */}
             <div className="flex items-center mb-8">
@@ -177,12 +195,33 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
             </div>
 
             {/* Add to Cart Button */}
-            <Button
-        className="w-full py-6 rounded-full bg-black hover:bg-gray-800 text-white mb-8 cursor-pointer"
-        onClick={handleAddToCart} 
-      >
-        {ProductConstants.addToCartText}
-      </Button>
+            {product.has_variants ? (
+              product.variants[selectedVariant]?.stock_quantity > 0 ? (
+                <Button
+                  className="w-full py-6 rounded-full bg-black hover:bg-gray-800 text-white mb-8 cursor-pointer"
+                  onClick={handleAddToCart}
+                >
+                  {LandingPageConstants.addToCartText}
+                </Button>
+              ) : (
+                <div className="w-full py-6 rounded-full bg-gray-200 text-gray-600 text-center mb-8">
+                  Out of Stock
+                </div>
+              )
+            ) : (
+              product.stock_quantity > 0 ? (
+                <Button
+                  className="w-full py-6 rounded-full bg-black hover:bg-gray-800 text-white mb-8 cursor-pointer"
+                  onClick={handleAddToCart}
+                >
+                  {LandingPageConstants.addToCartText}
+                </Button>
+              ) : (
+                <div className="w-full py-6 rounded-full bg-gray-200 text-gray-600 text-center mb-8">
+                  Out of Stock
+                </div>
+              )
+            )}
 
             {/* Product Tabs */}
             <Tabs defaultValue="details" className="w-full">
@@ -191,27 +230,29 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                   value="details"
                   className="data-[state=active]:border-b-2 data-[state=active]:border-black rounded-none"
                 >
-                  {ProductConstants.productDetailsTab}
+                  {LandingPageConstants.productDetailsTab}
                 </TabsTrigger>
                 <TabsTrigger
                   value="reviews"
                   className="data-[state=active]:border-b-2 data-[state=active]:border-black rounded-none"
                 >
-                  {ProductConstants.ratingsReviewsTab}
+                  {LandingPageConstants.ratingsReviewsTab}
                 </TabsTrigger>
                 <TabsTrigger
                   value="faqs"
                   className="data-[state=active]:border-b-2 data-[state=active]:border-black rounded-none"
                 >
-                  {ProductConstants.faqsTab}
+                  {LandingPageConstants.faqsTab}
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="details">
-                <h3 className="text-lg font-medium mb-4">{ProductConstants.productDetailsTab}</h3>
+                <h3 className="text-lg font-medium mb-4">{LandingPageConstants.productDetailsTab}</h3>
                 <ul className="space-y-2">
-                  {product.details.map((detail, index) => (
-                    <li key={index}>{detail}</li>
+                  {product.details.map((detail) => (
+                    <li key={detail.id}>
+                      <span className="font-medium">{detail.key}:</span> {detail.value}
+                    </li>
                   ))}
                 </ul>
               </TabsContent>
@@ -220,51 +261,149 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-medium">
-                      All Reviews <span className="text-gray-500">({product.reviews})</span>
+                      All Reviews <span className="text-gray-500">({reviews.length})</span>
                     </h3>
                     <div className="flex gap-2">
-                      {ProductConstants.reviewFilterOptions.map(option => (
+                      {LandingPageConstants.reviewFilterOptions.map(option => (
                         <Button key={option} variant="outline" size="sm" className="rounded-full">
                           {option}
                         </Button>
                       ))}
-                      <Button variant="outline" size="sm" className="rounded-full">
-                        {ProductConstants.writeReviewText}
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="rounded-full"
+                        onClick={() => setShowReviewForm(!showReviewForm)}
+                      >
+                        {LandingPageConstants.writeReviewText}
                       </Button>
                     </div>
                   </div>
 
-                  {product.reviewList.map((review) => (
-                    <div key={review.id} className="border-b border-gray-200 pb-6 mb-6">
-                      <div className="flex justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="stars text-yellow-400">
-                            {"★".repeat(review.rating)}
-                            {"☆".repeat(5 - review.rating)}
-                          </div>
-                          <span className="font-medium">{review.name}</span>
+                  {showReviewForm && (
+                    <form onSubmit={handleReviewSubmit} className="bg-gray-50 p-6 rounded-lg space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Name</label>
+                          <input
+                            type="text"
+                            value={reviewForm.name}
+                            onChange={(e) => setReviewForm({ ...reviewForm, name: e.target.value })}
+                            className="w-full p-2 border rounded-md"
+                            required
+                          />
                         </div>
-                        <div className="text-gray-500 text-sm">Posted on {review.date}</div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Email</label>
+                          <input
+                            type="email"
+                            value={reviewForm.email}
+                            onChange={(e) => setReviewForm({ ...reviewForm, email: e.target.value })}
+                            className="w-full p-2 border rounded-md"
+                            required
+                          />
+                        </div>
                       </div>
-                      <p className="text-gray-600">{review.content}</p>
-                    </div>
-                  ))}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Rating</label>
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setReviewForm({ ...reviewForm, rating: star })}
+                              className="text-2xl"
+                            >
+                              {ProductIcons.star(star <= reviewForm.rating)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Comment</label>
+                        <textarea
+                          value={reviewForm.comment}
+                          onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                          className="w-full p-2 border rounded-md h-32"
+                          required
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowReviewForm(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={reviewLoading}
+                        >
+                          {reviewLoading ? 'Submitting...' : 'Submit Review'}
+                        </Button>
+                      </div>
+                      {reviewError && (
+                        <p className="text-red-500 text-sm">{reviewError}</p>
+                      )}
+                    </form>
+                  )}
 
-                  <Button variant="outline" className="mx-auto block rounded-full border-black">
-                    {ProductConstants.loadMoreReviewsText}
-                  </Button>
+                  {reviewsLoading ? (
+                    <div className="text-center py-4">Loading reviews...</div>
+                  ) : reviewsError ? (
+                    <div className="text-center py-4 text-red-500">{reviewsError}</div>
+                  ) : reviews.length === 0 ? (
+                    <p className="text-gray-500 text-center py-4">No reviews yet</p>
+                  ) : (
+                    <div className="space-y-6">
+                      {reviews.map((review, index) => (
+                        <div key={index} className="border-b pb-6">
+                          <div className="flex items-center justify-between mb-2">
+                            <div>
+                              <h4 className="font-medium">{review.name}</h4>
+                              <p className="text-sm text-gray-500">{review.email}</p>
+                            </div>
+                            <div className="flex items-center">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <span key={i} className="text-xl">
+                                  {ProductIcons.star(i < review.rating)}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <p className="text-gray-600">{review.comment}</p>
+                          {review.created_at && (
+                            <p className="text-sm text-gray-400 mt-2">
+                              {new Date(review.created_at).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {reviews.length > 0 && (
+                    <Button variant="outline" className="mx-auto block rounded-full border-black">
+                      {LandingPageConstants.loadMoreReviewsText}
+                    </Button>
+                  )}
                 </div>
               </TabsContent>
 
               <TabsContent value="faqs">
                 <h3 className="text-lg font-medium mb-4">Frequently Asked Questions</h3>
                 <div className="space-y-6">
-                  {product.faqs.map((faq, index) => (
-                    <div key={index} className="mb-4">
-                      <h4 className="font-medium mb-2">Q: {faq.question}</h4>
-                      <p className="text-gray-600">A: {faq.answer}</p>
-                    </div>
-                  ))}
+                  {product.faqs.length > 0 ? (
+                    product.faqs.map((faq) => (
+                      <div key={faq.id} className="mb-4">
+                        <h4 className="font-medium mb-2">Q: {faq.question}</h4>
+                        <p className="text-gray-600">A: {faq.answer}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-center py-4">No FAQs available</p>
+                  )}
                 </div>
               </TabsContent>
             </Tabs>
@@ -275,7 +414,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
       {/* Related Products */}
       <section className="py-16">
         <h2 className="text-3xl font-bold text-center mb-10">
-          {ProductConstants.relatedProductsTitle}
+          {LandingPageConstants.relatedProductsTitle}
         </h2>
         <ProductGrid />
       </section>
