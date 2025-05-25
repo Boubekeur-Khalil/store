@@ -1,4 +1,4 @@
-export const ProductConstants = {
+export const LandingPageConstants = {
   // Hero Banner
   heroTitle: "UPGRADE YOUR FRAMES WITH LOWER PRICES.",
   heroDescription: "Browse through our diverse range of meticulously crafted monitors, designed to bring out your gaming experience and cater to your professional needs.",

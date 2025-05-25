@@ -1,10 +1,10 @@
-import type { Config } from 'tailwindcss';
+import type { Config } from 'tailwindcss'
 
 const config: Config = {
   content: [
-    "./app/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
-    "./lib/**/*.{js,ts}",
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
@@ -129,9 +129,73 @@ const config: Config = {
        "marquee-horizontal": "marquee-x var(--duration) infinite linear",
        "marquee-vertical": "marquee-y var(--duration) linear infinite",
        },
+      components: {
+        // Product Detail Layout
+        'product-detail': 'bg-white',
+        'product-container': 'max-w-7xl mx-auto px-4 py-10',
+        'product-layout': 'flex flex-col lg:flex-row gap-8',
+        
+        // Image Gallery
+        'gallery-container': 'w-full lg:w-1/2 lg:pr-10',
+        'primary-image': 'rounded-xl overflow-hidden mb-5',
+        'gallery-grid': 'grid grid-cols-3 gap-4',
+        'gallery-item': 'border rounded-lg overflow-hidden',
+        'product-image': 'w-full h-auto object-cover',
+        
+        // Product Info
+        'info-container': 'w-full lg:w-1/2 lg:pl-5',
+        'product-header': 'flex items-center justify-between mb-2',
+        'product-title': 'text-2xl font-bold',
+        'rating-container': 'stars text-xl',
+        'review-count': 'text-sm text-gray-500 mb-5',
+        
+        // Price Section
+        'price-container': 'flex items-center mb-5',
+        'current-price': 'text-2xl font-bold mr-4',
+        'original-price': 'text-lg text-gray-400 line-through mr-3',
+        'sale-badge': 'bg-red-500 text-white text-xs px-2 py-1 rounded',
+        
+        // Description
+        'product-description': 'text-gray-600 mb-8 leading-relaxed',
+        
+        // Variants
+        'variants-section': 'mb-8',
+        'variants-title': 'font-medium mb-4',
+        'variants-grid': 'grid grid-cols-2 gap-4',
+        'variant-button': 'p-4 border rounded-lg',
+        'variant-selected': 'border-black bg-gray-50',
+        'variant-unselected': 'border-gray-200',
+        
+        // Quantity Selector
+        'quantity-container': 'flex items-center mb-8',
+        'quantity-button': 'w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer',
+        'quantity-input': 'w-16 h-9 mx-3 text-center border-none',
+        
+        // Add to Cart
+        'add-to-cart': 'w-full py-6 rounded-full bg-black hover:bg-gray-800 text-white mb-8 cursor-pointer',
+        'out-of-stock': 'w-full py-6 rounded-full bg-gray-200 text-gray-600 text-center mb-8',
+        
+        // Reviews
+        'review-form': 'bg-gray-50 p-6 rounded-lg space-y-4',
+        'review-input': 'w-full p-2 border rounded-md',
+        'review-textarea': 'w-full p-2 border rounded-md h-32',
+        'review-item': 'border-b pb-6',
+        
+        // Related Products
+        'related-section': 'py-16',
+        'related-title': 'text-3xl font-bold text-center mb-10',
+        
+        // Cart Button
+        'cart-button': {
+          base: 'w-full py-6 rounded-full transition-colors duration-200',
+          default: 'bg-black hover:bg-gray-800 text-white',
+          disabled: 'bg-gray-200 text-gray-500 cursor-not-allowed',
+          loading: 'bg-gray-800 text-gray-300 cursor-wait'
+        }
+      },
     },
   },
   plugins: [],
-};
+}
 
-export default config;
+export default config

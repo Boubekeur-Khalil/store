@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button"
 import { ProductImages } from "../products/[slug]/images"
 import { ProductIcons } from "../products/[slug]/icons"
 import { Product } from "@/lib/types/product"
-import ProductHeader from "@/components/product/header"
+import ProductHeader from "@/components/section/header"
 import Footer from "@/components/product/footer"
-import Newsletter from '@/components/product/newsletter'
+import Newsletter from '@/components/section/newsletter'
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<Product[]>([])

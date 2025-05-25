@@ -2,11 +2,16 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import ProductHeader from "@/components/product/header"
+import ProductHeader from "@/components/section/header"
 import Footer from "@/components/product/footer"
-import Newsletter from '@/components/product/newsletter'
+import Newsletter from '@/components/section/newsletter'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { useCheckout, useWilayas } from '@/hooks/hooks'
+import { CheckoutRequest } from '@/lib/types/checkout'
+import { ApiException } from '@/lib/api/api'
 
 interface CartItem {
   id: string
@@ -17,7 +22,7 @@ interface CartItem {
   selectedSize?: string
   slug?: string
   description?: string
-  image?: string  // Add this line
+  image?: string
 }
 
 type ValidationError = {
@@ -28,18 +33,20 @@ type ValidationError = {
 export default function CheckoutPage() {
   const [checkoutItems, setCheckoutItems] = useState<CartItem[]>([])
   const [discountCode, setDiscountCode] = useState('ZJ3OOFF')
-  const [appliedDiscount, setAppliedDiscount] = useState(false)
-  const [selectedShipping, setSelectedShipping] = useState('')
+  const [email, setEmail] = useState('')
+  const [isFormValid, setIsFormValid] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [personalInfo, setPersonalInfo] = useState({
-    fullName: '',
-    phoneNumber: '',
-    streetAddress: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: ''
+    customer_name: '',
+    customer_phone: '',
+    customer_email: '',
+    wilaya_id: 0,
+    address: '',
+    notes: ''
   })
   const router = useRouter()
+  const { submitCheckout, loading } = useCheckout()
+  const { wilayas, loading: wilayasLoading, error: wilayasError } = useWilayas()
 
   useEffect(() => {
     // Retrieve items from session storage on component mount
@@ -48,6 +55,17 @@ export default function CheckoutPage() {
       setCheckoutItems(JSON.parse(storedItems))
     }
   }, [])
+
+  useEffect(() => {
+    // Check form validity whenever personalInfo changes
+    const errors = validateCheckout();
+    const errorMap: Record<string, string> = {};
+    errors.forEach(error => {
+      errorMap[error.field] = error.message;
+    });
+    setFieldErrors(errorMap);
+    setIsFormValid(errors.length === 0 && checkoutItems.length > 0);
+  }, [personalInfo, checkoutItems]);
 
   // Calculate cart totals based on actual items
   const calculateSubtotal = () => {
@@ -58,216 +76,252 @@ export default function CheckoutPage() {
   }
 
   const subtotal = calculateSubtotal()
-  const shippingFee = 1500 // $ fixed shipping
-  const tax = 129 // $ fixed tax
+  const shippingFee = 15.00
+  const tax = 1.29
   const total = subtotal + shippingFee + tax
-
-  const applyDiscount = () => {
-    if (discountCode === 'Z.BOOFF') {
-      setAppliedDiscount(true)
-      // Discount logic here
-    }
-  }
 
   const validateCheckout = (): ValidationError[] => {
     const errors: ValidationError[] = [];
 
-    if (!personalInfo.fullName.trim()) {
-      errors.push({ field: 'fullName', message: 'Full name is required' });
+    if (!personalInfo.customer_name.trim()) {
+      errors.push({ field: 'customer_name', message: 'Full name is required' });
     }
-    if (!personalInfo.phoneNumber.trim()) {
-      errors.push({ field: 'phoneNumber', message: 'Phone number is required' });
+
+    // Phone number validation
+    const phoneRegex = /^\+213[1-9]\d{8}$/;
+    if (!personalInfo.customer_phone.trim()) {
+      errors.push({ field: 'customer_phone', message: 'Phone number is required' });
+    } else if (!phoneRegex.test(personalInfo.customer_phone.trim())) {
+      errors.push({ field: 'customer_phone', message: 'Phone number must be in format +213XXXXXXXXX (no leading 0 after +213)' });
     }
-    if (!personalInfo.streetAddress.trim()) {
-      errors.push({ field: 'streetAddress', message: 'Street address is required' });
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!personalInfo.customer_email.trim()) {
+      errors.push({ field: 'customer_email', message: 'Email is required' });
+    } else if (!emailRegex.test(personalInfo.customer_email.trim())) {
+      errors.push({ field: 'customer_email', message: 'Please enter a valid email address' });
     }
-    if (!personalInfo.city.trim()) {
-      errors.push({ field: 'city', message: 'City is required' });
+
+    if (!personalInfo.address.trim()) {
+      errors.push({ field: 'address', message: 'Address is required' });
     }
-    if (!personalInfo.state.trim()) {
-      errors.push({ field: 'state', message: 'State is required' });
-    }
-    if (!personalInfo.zipCode.trim()) {
-      errors.push({ field: 'zipCode', message: 'Zip code is required' });
-    }
-    if (!personalInfo.country.trim()) {
-      errors.push({ field: 'country', message: 'Country is required' });
-    }
-    if (!selectedShipping) {
-      errors.push({ field: 'shipping', message: 'Please select a shipping method' });
+    if (!personalInfo.wilaya_id) {
+      errors.push({ field: 'wilaya_id', message: 'Wilaya is required' });
     }
 
     return errors;
   }
 
-  // Add this function before the return statement
-  const validateForm = () => {
-    return (
-      personalInfo.fullName.trim() !== '' &&
-      personalInfo.phoneNumber.trim() !== '' &&
-      personalInfo.streetAddress.trim() !== '' &&
-      personalInfo.city.trim() !== '' &&
-      personalInfo.state.trim() !== '' &&
-      personalInfo.zipCode.trim() !== '' &&
-      personalInfo.country.trim() !== '' &&
-      selectedShipping !== ''
-    )
+  const handleCheckout = async () => {
+    const errors = validateCheckout();
+    if (errors.length > 0) {
+      sessionStorage.setItem('checkoutErrors', JSON.stringify(errors));
+      router.push('/checkout/failed');
+      return;
+    }
+
+    try {
+      // Ensure we have valid product IDs and convert them to numbers
+      const validItems = checkoutItems.filter(item => {
+        const productId = Number(item.id);
+        return !isNaN(productId) && productId > 0;
+      });
+
+      if (validItems.length === 0) {
+        throw new Error('No valid items in cart');
+      }
+
+      const checkoutData: CheckoutRequest = {
+        customer_name: personalInfo.customer_name.trim(),
+        customer_email: personalInfo.customer_email.trim(),
+        customer_phone: personalInfo.customer_phone.trim(),
+        wilaya_id: Number(personalInfo.wilaya_id),
+        address: personalInfo.address.trim(),
+        notes: personalInfo.notes?.trim() || '',
+        items: validItems.map(item => ({
+          product_id: Number(item.id),
+          quantity: Number(item.quantity || 1)
+        }))
+      };
+
+      console.log('Submitting checkout data:', JSON.stringify(checkoutData, null, 2));
+      await submitCheckout(checkoutData);
+      router.push('/checkout/success');
+    } catch (err) {
+      console.error('Checkout failed:', err);
+      
+      let errorMessages: ValidationError[] = [];
+      
+      if (err instanceof ApiException) {
+        if (err.errors) {
+          // Convert API validation errors to our format
+          errorMessages = Object.entries(err.errors).map(([field, messages]) => ({
+            field,
+            message: messages[0] // Take the first error message for each field
+          }));
+        } else {
+          errorMessages = [{
+            field: 'general',
+            message: err.message
+          }];
+        }
+      } else {
+        errorMessages = [{
+          field: 'general',
+          message: err instanceof Error ? err.message : 'Failed to process checkout'
+        }];
+      }
+
+      sessionStorage.setItem('checkoutErrors', JSON.stringify(errorMessages));
+      router.push('/checkout/failed');
+    }
+  }
+
+  // Newsletter form handler
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log('Newsletter subscription:', email)
   }
 
   return (
     <div>
       <ProductHeader/>
-      <div className="max-w-[1440px] mx-auto py-7 my-8 relative">
-        {/* Main content container with relative positioning */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left side - Personal Information */}
-          <div className="lg:col-span-8">
-            <h1 className="text-2xl font-bold mb-8">Personal Information</h1>
-            <div className="space-y-6">
-              {/* Personal Information */}
-              <section>
-                <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2">Personnel informations</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+      <div className="max-w-6xl mx-auto py-7 my-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left column - Forms (2/3 width) */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Personal Information */}
+            <section>
+              <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2">Personnel informations</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+                <div>
+                  <label className="block text-sm font-bold mb-1">Full name</label>
+                  <input 
+                    type="text" 
+                    value={personalInfo.fullName}
+                    onChange={(e) => setPersonalInfo(prev => ({ ...prev, fullName: e.target.value }))}
+                    className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold mb-1">Number phone</label>
+                  <input 
+                    type="tel" 
+                    value={personalInfo.phoneNumber}
+                    onChange={(e) => setPersonalInfo(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                    className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                    required
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* Shipping Address */}
+            <section>
+              <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2">Shipping address</h2>
+              <div className="space-y-4 my-8">
+                <div>
+                  <label className="block text-sm font-bold mb-1">Street Address</label>
+                  <input 
+                    type="text" 
+                    value={personalInfo.streetAddress}
+                    onChange={(e) => setPersonalInfo(prev => ({ ...prev, streetAddress: e.target.value }))}
+                    className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-bold mb-1">Full name</label>
+                    <label className="block text-sm font-bold mb-1">City</label>
                     <input 
                       type="text" 
-                      value={personalInfo.fullName}
-                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, fullName: e.target.value }))}
+                      value={personalInfo.city}
+                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, city: e.target.value }))}
                       className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                      required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold mb-1">Number phone</label>
-                    <input 
-                      type="tel" 
-                      value={personalInfo.phoneNumber}
-                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                      className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                      required
-                    />
-                  </div>
-                </div>
-              </section>
-
-              {/* Shipping Address */}
-              <section>
-                <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2">Shipping address</h2>
-                <div className="space-y-4 my-8">
-                  <div>
-                    <label className="block text-sm font-bold mb-1">Street Address</label>
+                    <label className="block text-sm font-bold mb-1">State</label>
                     <input 
                       type="text" 
-                      value={personalInfo.streetAddress}
-                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, streetAddress: e.target.value }))}
+                      value={personalInfo.state}
+                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, state: e.target.value }))}
                       className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                      required
                     />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold mb-1">City</label>
-                      <input 
-                        type="text" 
-                        value={personalInfo.city}
-                        onChange={(e) => setPersonalInfo(prev => ({ ...prev, city: e.target.value }))}
-                        className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold mb-1">State</label>
-                      <input 
-                        type="text" 
-                        value={personalInfo.state}
-                        onChange={(e) => setPersonalInfo(prev => ({ ...prev, state: e.target.value }))}
-                        className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                      />
-                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold mb-1">Zip Code</label>
+                    <input 
+                      type="text" 
+                      value={personalInfo.zipCode}
+                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, zipCode: e.target.value }))}
+                      className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                    />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold mb-1">Zip Code</label>
-                      <input 
-                        type="text" 
-                        value={personalInfo.zipCode}
-                        onChange={(e) => setPersonalInfo(prev => ({ ...prev, zipCode: e.target.value }))}
-                        className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold mb-1">Country</label>
-                      <input 
-                        type="text" 
-                        value={personalInfo.country}
-                        onChange={(e) => setPersonalInfo(prev => ({ ...prev, country: e.target.value }))}
-                        className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-bold mb-1">Country</label>
+                    <input 
+                      type="text" 
+                      value={personalInfo.country}
+                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, country: e.target.value }))}
+                      className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                    />
                   </div>
                 </div>
-              </section>
+              </div>
+            </section>
 
-              {/* Delivery Method */}
-              <section>
-                <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2 my-8">Delivry method</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-[36px] mb-[188px]">
-                  <button 
-                    onClick={() => setSelectedShipping('MAYSTRO DELIVRY')}
-                    className={`w-[259px] h-[58px] rounded-[32px] px-[15px] py-[10px] border-2 flex items-center gap-2 ${
-                      selectedShipping === 'MAYSTRO DELIVRY' 
-                        ? 'border-black bg-black text-white' 
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    <div className={`w-[38px] h-[38px] rounded-[32px] border-2 flex items-center justify-center ${
-                      selectedShipping === 'MAYSTRO DELIVRY'
-                        ? 'border-white'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}>
-                      <img src="/images/maystro.png" className="w-[38px] h-[38px] rounded-[32px]" />
-                    </div>
-                    <span className="font-medium">MAYSTRO DELIVRY</span>
-                  </button>
+            {/* Delivery Method */}
+            <section>
+              <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2 my-8">Delivry method</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button 
+                  onClick={() => setSelectedShipping('MAYSTRO DELIVRY')}
+                  className={`p-4 border rounded-full flex items-center justify-center gap-2 transition-colors ${
+                    selectedShipping === 'MAYSTRO DELIVRY' 
+                      ? 'border-black bg-gray-100' 
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                   <img src="/images/maystro.png" />
+                  </div>
+                  <span className="font-medium">MAYSTRO DELIVRY</span>
+                </button>
 
-                  <button 
-                    onClick={() => setSelectedShipping('YALIDINE EXPRESS')}
-                    className={`w-[259px] h-[58px] rounded-[32px] px-[15px] py-[10px] border flex items-center gap-2 ${
-                      selectedShipping === 'YALIDINE EXPRESS' 
-                        ? 'border-black bg-black text-white' 
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    <div className={`w-[38px] h-[38px] rounded-[32px] border flex items-center justify-center ${
-                      selectedShipping === 'YALIDINE EXPRESS'
-                        ? 'border-white'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}>
-                      <img src="/images/yalidin.png" className="w-[38px] h-[38px] rounded-[32px]" />
-                    </div>
-                    <span className="font-medium">YALIDINE EXPRESS</span>
-                  </button>
+                <button 
+                  onClick={() => setSelectedShipping('YALIDINE EXPRESS')}
+                  className={`p-4 border rounded-full flex items-center justify-center gap-2 transition-colors ${
+                    selectedShipping === 'YALIDINE EXPRESS' 
+                      ? 'border-black bg-gray-100' 
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white">
+                    <img src="/images/yalidin.png" />
+                  </div>
+                  <span className="font-medium">YALIDINE EXPRESS</span>
+                </button>
 
-                  <button 
-                    onClick={() => setSelectedShipping('ZR EXPRESS')}
-                    className={`w-[259px] h-[58px] rounded-[32px] px-[15px] py-[10px] border flex items-center gap-2 ${
-                      selectedShipping === 'ZR EXPRESS' 
-                        ? 'border-black bg-black text-white' 
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    <div className={`w-[38px] h-[38px] rounded-[32px] border flex items-center justify-center ${
-                      selectedShipping === 'ZR EXPRESS'
-                        ? 'border-white'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}>
-                      <img src="/images/ZR.png" className="w-[38px] h-[38px] rounded-[32px]" />
-                    </div>
-                    <span className="font-medium">ZR EXPRESS</span>
-                  </button>
-                </div>
-              </section>
-            </div>
+                <button 
+                  onClick={() => setSelectedShipping('ZR EXPRESS')}
+                  className={`p-4 border rounded-full flex items-center justify-center gap-2 transition-colors ${
+                    selectedShipping === 'ZR EXPRESS' 
+                      ? 'border-black bg-gray-100' 
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-black">
+                    <img src="/images/ZR.png" />
+                  </div>
+                  <span className="font-medium">ZR EXPRESS</span>
+                </button>
+              </div>
+            </section>
           </div>
 
           {/* Right side - Order Summary */}
@@ -325,7 +379,7 @@ export default function CheckoutPage() {
                     className="flex-1 p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black"
                   />
                   <button 
-                    onClick={applyDiscount}
+                    onClick={() => {}}
                     className="px-8 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
                   >
                     Apply
@@ -354,20 +408,22 @@ export default function CheckoutPage() {
                     <span>$ {total.toFixed(2)}</span>
                   </div>
                 </div>
-
+                
+                {/* Replace the existing checkout button with this */}
                 <button 
                   onClick={() => {
                     const errors = validateCheckout();
                     if (errors.length === 0) {
                       router.push('/checkout/success');
                     } else {
+                      // Store errors in session storage to show them on the failed page
                       sessionStorage.setItem('checkoutErrors', JSON.stringify(errors));
                       router.push('/checkout/failed');
                     }
                   }}
                   className="w-full py-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors mt-6"
                 >
-                  Checkout
+                  {loading ? 'Processing...' : !isFormValid ? 'Please fill all required fields correctly' : 'Checkout'}
                 </button>
 
                 <div className="text-center mt-4">
