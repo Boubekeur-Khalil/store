@@ -47,6 +47,7 @@ export interface ProductFAQ {
 }
 
 export interface Product {
+  primary_image: string;
   id: number;
   name: string;
   slug: string;

@@ -1,4 +1,8 @@
 // images.ts
+export const images = {
+  logo: "/logo/svg/logo.svg",
+  // Add other global images here
+} as const;
 export const ProductImages = {
   // Hero banner
   heroBanner: "/images/banner.png",

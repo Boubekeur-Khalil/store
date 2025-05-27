@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { ShoppingCart, User, Search, ChevronDown } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
+import { images } from "@/app/products/[slug]/images"
 import { icons } from "@/lib/icons"; // adjust path as needed
 import Image from "next/image"
 
@@ -16,7 +17,13 @@ const totalItems = cart.reduce((total, item) => total + (item.quantity || 1), 0)
 return (
     <header className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
       <Link href="/" className="text-2xl font-bold mr-5">
-        ZJ.CO
+        <Image 
+          src={images.logo} 
+          alt="Store Logo" 
+          width={100} 
+          height={40} 
+          className="object-contain"
+        />
       </Link>
 
       
@@ -33,13 +40,19 @@ return (
       <div className="flex items-center gap-5">
         <div className="relative">
           <Link href="/cart">
-            <Image alt="cart"  src={icons.cart} width={18.84} height={18}className="cursor-pointer" />
+            <Image 
+              alt="cart" 
+              src={icons.cart} 
+              width={18.84} 
+              height={18} 
+              className="cursor-pointer" 
+            />
+            {totalItems > 0 && (
+              <span className="absolute -top-2 -right-2 bg-[#B4E907] text-black text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {totalItems}
+              </span>
+            )}
           </Link>
-          {totalItems > 0 && (
-            <span className="absolute -top-2 -right-2 bg-[#B4E907] text-black text-[10px] font-bold w-[14px] h-[14px] rounded-full flex items-center justify-center">
-           {totalItems}
-            </span>
-          )}
         </div>
         {/* <User className="h-6 w-6 cursor-pointer" /> */}
       </div>
