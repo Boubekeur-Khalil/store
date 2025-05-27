@@ -35,7 +35,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
     rating: 5,
     comment: ''
   })
-  const { submitReview, loading: reviewLoading } = useReview(product?.id || '')
+  const { submitReview, loading: reviewLoading } = useReview(product?.id ? product.id.toString() : '')
   const { reviews, loading: reviewsLoading } = useReviews(product?.id?.toString() || '')
 
   useEffect(() => {
@@ -185,17 +185,17 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
             <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
             
             {/* Stars/Rating moved between title and price */}
-            <div className="flex items-center mb-4">
-              <div className="stars text-xl">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <span key={`star-${i}`}>
-                    {ProductIcons.star(i < Math.floor(parseFloat(product.average_rating)))}
-                  </span>
-                ))}
-                <span className="ml-1 text-base">{product.average_rating}</span>
-              </div>
-              <span className="text-sm text-gray-500 ml-3">{product.reviews} reviews</span>
-            </div>
+          <div className="flex items-center mb-4">
+  <div className="stars text-xl">
+    {Array.from({ length: 5 }).map((_, i) => (
+      <span key={`star-${i}`}>
+        {ProductIcons.star(i < Math.floor(parseFloat(product.average_rating)))}
+      </span>
+    ))}
+    <span className="ml-1 text-base">{product.average_rating}</span>
+  </div>
+  <span className="text-sm text-gray-500 ml-3">{product.reviews.length} reviews</span>
+</div>
 
             {/* Price */}
             <div className="flex items-center mb-5">

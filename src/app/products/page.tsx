@@ -283,45 +283,47 @@ export default function ProductFilterPage() {
 
           {/* Product Grid */}
           <div className="flex-1">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-              {paginatedProducts.map((product) => {
-                const productImage = product.images[0]?.image || ProductImages.placeholder
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+  {paginatedProducts.map((product) => {
+    const productImage = product.images[0]?.image || ProductImages.placeholder;
 
-                return (
-                  <div key={product.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
-                    <Link href={`/products/${product.slug}`} className="block">
-                      <div className="overflow-hidden rounded-lg mb-3">
-                        <Image
-                          src={productImage}
-                          alt={product.name}
-                          width={300}
-                          height={300}
-                          className="w-full h-auto aspect-square object-cover transition-transform hover:scale-105"
-                        />
-                      </div>
-                      <h3 className="font-semibold text-sm mb-1">{product.name}</h3>
-                      <p className="text-xs text-gray-500 mb-1">{product.description}</p>
-                      <div className="flex items-center gap-2">
-                        <p className="font-bold text-lg">{product.current_price}</p>
-                        {product.is_sale && (
-                          <span className="text-sm text-gray-500 line-through">{product.price}</span>
-                        )}
-                      </div>
-                      <div className="flex items-center mt-1">
-                        <span className="text-yellow-400">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <span key={`star-${product.id}-${i}`}>
-                              {ProductIcons.star(i < Math.floor(parseFloat(product.average_rating)))}
-                            </span>
-                          ))}
-                        </span>
-                        <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
-                      </div>
-                    </Link>
-                  </div>
-                )
-              })}
-            </div>
+    return (
+      <div key={product.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+        <Link href={`/products/${product.slug}`} className="block">
+          <div className="overflow-hidden rounded-lg mb-3">
+            <Image
+              src={productImage}
+              alt={product.name}
+              width={300}
+              height={300}
+              className="w-full h-auto aspect-square object-cover transition-transform hover:scale-105"
+            />
+          </div>
+          <h3 className="font-semibold text-sm mb-1">{product.name}</h3>
+          <p className="text-xs text-gray-500 mb-1">{product.description}</p>
+          <div className="flex items-center gap-2">
+            <p className="font-bold text-lg">{product.current_price}</p>
+            {product.is_sale && (
+              <span className="text-sm text-gray-500 line-through">{product.price}</span>
+            )}
+          </div>
+          <div className="flex items-center mt-1">
+            <
+
+span className="text-yellow-400">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <span key={`star-${product.id}-${i}`}>
+                  {ProductIcons.star(i < Math.floor(parseFloat(product.average_rating)))}
+                </span>
+              ))}
+            </span>
+            <span className="text-xs text-gray-500 ml-1">({product.reviews.length})</span>
+          </div>
+        </Link>
+      </div>
+    );
+  })}
+</div>
 
             {/* Pagination */}
             {filteredProducts.length > productsPerPage && (

@@ -1,6 +1,6 @@
 // Constants.ts
 export const API_CONFIG = {
-  SUBDOMAIN: 'alaestore',
+  SUBDOMAIN: 'teststore',
   DOMAIN: 'lvh.me',
   PORT: '8000',
   API_VERSION: 'v1'
