@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { usePathname } from 'next/navigation'
+import { BANNER_MESSAGE } from '@/utils/constants'
 
 const Banner = () => {
     const pathname = usePathname()
@@ -28,9 +29,9 @@ const Banner = () => {
         <div className='h-[45px] bg-black flex items-center justify-center text-white text-sm font-bold overflow-hidden'>
             <div className='marquee-container'>
                 <div className='marquee-content'>
-                    <p className='text-[20px] mx-8'>Free Delivery on orders above 150 DZD</p>
-                    <p className='text-[20px] mx-8'>Free Delivery on orders above 150 DZD</p>
-                    <p className='text-[20px] mx-8'>Free Delivery on orders above 150 DZD</p>
+                    <p className='text-[20px] mx-8'>{BANNER_MESSAGE}</p>
+                    <p className='text-[20px] mx-8'>{BANNER_MESSAGE}</p>
+                    <p className='text-[20px] mx-8'>{BANNER_MESSAGE}</p>  
                 </div>
             </div>
             <style jsx>{`
@@ -41,7 +42,7 @@ const Banner = () => {
                 
                 .marquee-content {
                     display: flex;
-                    animation: scroll 15s linear infinite;
+                    animation: scroll 30s linear infinite;
                     animation-duration: 10s;
                     justify-content: space-around;
                 }

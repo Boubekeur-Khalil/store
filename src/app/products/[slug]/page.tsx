@@ -5,8 +5,8 @@ import { use } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import ProductGrid from "@/components/product/product-grid"
-import Newsletter from "@/components/product/newsletter"
-import ProductHeader from "@/components/product/header"
+import Newsletter from "@/components/section/newsletter"
+import ProductHeader from "@/components/section/header"
 import { products } from "@/lib/products/products"
 import { useState } from "react"
 import Footer from '@/components/product/footer'

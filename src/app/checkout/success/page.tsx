@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import ProductHeader from "@/components/product/header"
+import ProductHeader from "@/components/section/header"
 import Footer from "@/components/product/footer"
 
 export default function OrderSuccessPage() {

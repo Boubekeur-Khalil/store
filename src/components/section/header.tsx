@@ -6,6 +6,7 @@ import { Search } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
 import { icons } from "@/lib/icons"; // adjust path as needed
 import Image from "next/image"
+import { images } from "@/app/products/[slug]/images"
 
 export default function Header() {
   const { cart } = useCart()
@@ -15,8 +16,14 @@ export default function Header() {
   
   return (
     <header className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
-      <Link href="/" className="text-2xl font-bold mr-5">
-        ZJ.CO
+   <Link href="/" className="text-2xl font-bold mr-5">
+        <Image 
+          src={images.logo} 
+          alt="Store Logo" 
+          width={100} 
+          height={40} 
+          className="object-contain"
+        />
       </Link>
 
       <nav className="hidden md:flex gap-5">

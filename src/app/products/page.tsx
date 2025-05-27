@@ -5,10 +5,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ProductImages } from './[slug]/images'
 import { products } from '@/lib/products/products'
-import ProductHeader from "@/components/product/header"
+import ProductHeader from "@/components/section/header"
 import Footer from "@/components/product/footer"
 import { ProductIcons } from './[slug]/icons'
-import Newsletter from '@/components/product/newsletter'
+import Newsletter from '@/components/section/newsletter'
 import * as Slider from "@radix-ui/react-slider"
 
 interface Filters {

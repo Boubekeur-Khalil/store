@@ -1,7 +1,20 @@
 import Link from "next/link";
 import { FaTwitter, FaFacebookF, FaInstagram } from "react-icons/fa";
+import { FooterConstants } from "@/utils/constants";
 
 export default function Footer() {
+  const { 
+    companyName, 
+    companyDescription, 
+    socialLinks, 
+    companyLinks, 
+    helpLinks, 
+    faqLinks, 
+    resourceLinks, 
+    paymentMethods,
+    copyright 
+  } = FooterConstants;
+
   return (
     <footer className="bg-gray-50 text-gray-700 py-12 px-4 sm:px-6 lg:px-8">
       <div className="mx-[100px]">
@@ -9,20 +22,16 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
           {/* Brand Column */}
           <div className="space-y-4">
-            <h4 className="text-xl font-bold text-gray-900">ZJ.CO</h4>
-            <p className="text-sm">
-              We have clothes that suits your style and which you're proud to wear. From women to men.
-            </p>
+            <h4 className="text-xl font-bold text-gray-900">{companyName}</h4>
+            <p className="text-sm">{companyDescription}</p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-500 hover:text-gray-900">
-                <FaTwitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-500 hover:text-gray-900">
-                <FaFacebookF className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-500 hover:text-gray-900">
-                <FaInstagram className="w-5 h-5" />
-              </a>
+              {socialLinks.map((link) => (
+                <a key={link.name} href={link.url} className="text-gray-500 hover:text-gray-900">
+                  {link.name === "Twitter" && <FaTwitter className="w-5 h-5" />}
+                  {link.name === "Facebook" && <FaFacebookF className="w-5 h-5" />}
+                  {link.name === "Instagram" && <FaInstagram className="w-5 h-5" />}
+                </a>
+              ))}
             </div>
           </div>
 
@@ -30,10 +39,13 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="text-lg font-semibold text-gray-900">COMPANY</h4>
             <ul className="space-y-2">
-              <li><Link href="#" className="text-sm hover:text-gray-900">About</Link></li>
-              <li><Link href="#" className="text-sm hover:text-gray-900">Features</Link></li>
-              <li><Link href="#" className="text-sm hover:text-gray-900">Works</Link></li>
-              <li><Link href="#" className="text-sm hover:text-gray-900">Career</Link></li>
+              {companyLinks.map((link) => (
+                <li key={link.name}>
+                  <Link href={link.url} className="text-sm hover:text-gray-900">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -41,10 +53,13 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="text-lg font-semibold text-gray-900">HELP</h4>
             <ul className="space-y-2">
-              <li><Link href="#" className="text-sm hover:text-gray-900">Customer Support</Link></li>
-              <li><Link href="#" className="text-sm hover:text-gray-900">Delivery Details</Link></li>
-              <li><Link href="#" className="text-sm hover:text-gray-900">Terms & Conditions</Link></li>
-              <li><Link href="#" className="text-sm hover:text-gray-900">Privacy Policy</Link></li>
+              {helpLinks.map((link) => (
+                <li key={link.name}>
+                  <Link href={link.url} className="text-sm hover:text-gray-900">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -52,10 +67,13 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="text-lg font-semibold text-gray-900">FAQ</h4>
             <ul className="space-y-2">
-              <li><Link href="#" className="text-sm hover:text-gray-900">Account</Link></li>
-              <li><Link href="#" className="text-sm hover:text-gray-900">Manage Deliveries</Link></li>
-              <li><Link href="#" className="text-sm hover:text-gray-900">Orders</Link></li>
-              <li><Link href="#" className="text-sm hover:text-gray-900">Payments</Link></li>
+              {faqLinks.map((link) => (
+                <li key={link.name}>
+                  <Link href={link.url} className="text-sm hover:text-gray-900">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -63,10 +81,13 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="text-lg font-semibold text-gray-900">RESOURCES</h4>
             <ul className="space-y-2">
-              <li><Link href="#" className="text-sm hover:text-gray-900">Free eBooks</Link></li>
-              <li><Link href="#" className="text-sm hover:text-gray-900">Development Tutorial</Link></li>
-              <li><Link href="#" className="text-sm hover:text-gray-900">How to - Blog</Link></li>
-              <li><Link href="#" className="text-sm hover:text-gray-900">Youtube Playlist</Link></li>
+              {resourceLinks.map((link) => (
+                <li key={link.name}>
+                  <Link href={link.url} className="text-sm hover:text-gray-900">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -77,34 +98,17 @@ export default function Footer() {
         {/* Footer Bottom */}
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
-            <p className="text-sm">ZJ.co ©2025, All Rights Reserved</p>
+            <p className="text-sm">{copyright}</p>
           </div>
           <div className="flex space-x-4">
-            <img 
-              src="https://cdn-icons-png.flaticon.com/128/5968/5968341.png" 
-              alt="Visa" 
-              className="w-8 h-8 object-contain"
-            />
-            <img 
-              src="https://cdn-icons-png.flaticon.com/128/5968/5968144.png" 
-              alt="Mastercard" 
-              className="w-8 h-8 object-contain"
-            />
-            <img 
-              src="https://cdn-icons-png.flaticon.com/128/196/196565.png" 
-              alt="PayPal" 
-              className="w-8 h-8 object-contain"
-            />
-            <img 
-              src="https://cdn-icons-png.flaticon.com/128/888/888870.png" 
-              alt="Apple Pay" 
-              className="w-8 h-8 object-contain"
-            />
-            <img 
-              src="https://cdn-icons-png.flaticon.com/128/6124/6124998.png" 
-              alt="Google Pay" 
-              className="w-8 h-8 object-contain"
-            />
+            {paymentMethods.map((method) => (
+              <img 
+                key={method.name}
+                src={method.icon} 
+                alt={method.name} 
+                className="w-8 h-8 object-contain"
+              />
+            ))}
           </div>
         </div>
       </div>
