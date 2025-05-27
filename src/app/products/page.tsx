@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ProductImages } from './[slug]/images'
-import { products } from '@/lib/products/products'
 import ProductHeader from "@/components/section/header"
 import Footer from "@/components/product/footer"
 import { ProductIcons } from './[slug]/icons'
 import Newsletter from '@/components/section/newsletter'
 import * as Slider from "@radix-ui/react-slider"
+import { useProducts } from '@/hooks/hooks'
 
 interface Filters {
   sizes: string[]
@@ -19,6 +19,7 @@ interface Filters {
 }
 
 export default function ProductFilterPage() {
+  const { products, loading, error } = useProducts()
   const [filters, setFilters] = useState<Filters>({
     sizes: [],
     colors: [],
@@ -34,33 +35,49 @@ export default function ProductFilterPage() {
     setCurrentPage(1)
   }, [filters])
 
-  // Available filter options
-  const allSizes = Array.from(new Set(products.flatMap(p => p.sizes.map(s => s.name))))
-  const allColors = Array.from(new Set(products.flatMap(p => p.colors.map(c => c.name))))
+  // Available filter options - only if products have these attributes
+  const hasSizes = products.some(p => p.attributes.some(attr => attr.name.toLowerCase() === 'size'))
+  const hasColors = products.some(p => p.attributes.some(attr => attr.name.toLowerCase() === 'color'))
+
+  const allSizes = hasSizes ? Array.from(new Set(products.flatMap(p => 
+    p.attributes
+      .find(attr => attr.name.toLowerCase() === 'size')
+      ?.values.map(v => v.value) || []
+  ))) : []
+
+  const allColors = hasColors ? Array.from(new Set(products.flatMap(p => 
+    p.attributes
+      .find(attr => attr.name.toLowerCase() === 'color')
+      ?.values.map(v => v.value) || []
+  ))) : []
 
   // Price conversion helper
   const parsePrice = (price: string) => parseFloat(price.replace(/[^0-9.]/g, ''))
 
   // Filtered products
   const filteredProducts = products.filter(product => {
-    const price = parsePrice(product.price)
+    const price = parsePrice(product.current_price)
     
     // Price range check
     const priceInRange = price >= filters.priceRange[0] && price <= filters.priceRange[1]
     
     // Rating check
-    const ratingValid = product.rating >= filters.minRating
+    const ratingValid = parseFloat(product.average_rating) >= filters.minRating
     
     // Size check - product must have ALL selected sizes
-    const sizesValid = filters.sizes.length === 0 || 
+    const sizesValid = !hasSizes || filters.sizes.length === 0 || 
       filters.sizes.every(selectedSize => 
-        product.sizes.some(productSize => productSize.name === selectedSize)
+        product.attributes
+          .find(attr => attr.name.toLowerCase() === 'size')
+          ?.values.some(v => v.value === selectedSize)
       )
     
     // Color check - product must have ALL selected colors
-    const colorsValid = filters.colors.length === 0 || 
+    const colorsValid = !hasColors || filters.colors.length === 0 || 
       filters.colors.every(selectedColor => 
-        product.colors.some(productColor => productColor.name === selectedColor)
+        product.attributes
+          .find(attr => attr.name.toLowerCase() === 'color')
+          ?.values.some(v => v.value === selectedColor)
       )
 
     return priceInRange && ratingValid && sizesValid && colorsValid
@@ -70,6 +87,28 @@ export default function ProductFilterPage() {
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage)
   const startIndex = (currentPage - 1) * productsPerPage
   const paginatedProducts = filteredProducts.slice(startIndex, startIndex + productsPerPage)
+
+  if (loading) {
+    return (
+      <div className="bg-white">
+        <ProductHeader />
+        <div className="max-w-7xl mx-auto px-4 py-10 text-center">
+          Loading products...
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white">
+        <ProductHeader />
+        <div className="max-w-7xl mx-auto px-4 py-10 text-center text-red-500">
+          Error: {error}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white">
@@ -84,7 +123,6 @@ export default function ProductFilterPage() {
                 Price Range: <span className="text-gray-900">{filters.priceRange[0]} DZD - {filters.priceRange[1]} DZD</span>
               </h3>
               <div className="mt-6 px-2">
-                {/* Replace the ElasticSlider with an improved slider */}
                 <div className="relative pt-5">
                   <div className="absolute -top-2 inset-x-0 flex justify-between text-xs text-gray-500">
                     <span>0 DZD</span>
@@ -159,70 +197,74 @@ export default function ProductFilterPage() {
               </div>
             </div>
 
-            {/* Size Filter */}
-            <div className="border-b pb-6">
-              <h3 className="font-semibold mb-4">Screen Sizes</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {allSizes.map(size => (
-                  <label 
-                    key={size} 
-                    className={`flex items-center justify-center p-2 rounded-md border cursor-pointer transition-all ${
-                      filters.sizes.includes(size) 
-                        ? 'bg-blue-100 border-blue-500 text-blue-700 font-medium shadow-sm' 
-                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={filters.sizes.includes(size)}
-                      onChange={e => {
-                        const newSizes = e.target.checked
-                          ? [...filters.sizes, size]
-                          : filters.sizes.filter(s => s !== size)
-                        setFilters(prev => ({ ...prev, sizes: newSizes }))
-                      }}
-                      className="sr-only" // Hide the default checkbox
-                    />
-                    <div className="flex items-center">
-                      {filters.sizes.includes(size) && (
-                        <svg className="w-3.5 h-3.5 mr-1.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                      <span>{size}</span>
-                    </div>
-                  </label>
-                ))}
+            {/* Size Filter - Only show if products have sizes */}
+            {hasSizes && (
+              <div className="border-b pb-6">
+                <h3 className="font-semibold mb-4">Screen Sizes</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {allSizes.map(size => (
+                    <label 
+                      key={size} 
+                      className={`flex items-center justify-center p-2 rounded-md border cursor-pointer transition-all ${
+                        filters.sizes.includes(size) 
+                          ? 'bg-blue-100 border-blue-500 text-blue-700 font-medium shadow-sm' 
+                          : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={filters.sizes.includes(size)}
+                        onChange={e => {
+                          const newSizes = e.target.checked
+                            ? [...filters.sizes, size]
+                            : filters.sizes.filter(s => s !== size)
+                          setFilters(prev => ({ ...prev, sizes: newSizes }))
+                        }}
+                        className="sr-only"
+                      />
+                      <div className="flex items-center">
+                        {filters.sizes.includes(size) && (
+                          <svg className="w-3.5 h-3.5 mr-1.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                        <span>{size}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Color Filter */}
-            <div className="border-b pb-6">
-              <h3 className="font-semibold mb-4">Colors</h3>
-              <div className="flex flex-wrap gap-2">
-                {allColors.map(color => (
-                  <button
-                    type="button"
-                    key={color}
-                    onClick={() => {
-                      const newColors = filters.colors.includes(color)
-                        ? filters.colors.filter(c => c !== color)
-                        : [...filters.colors, color]
-                      setFilters(prev => ({ ...prev, colors: newColors }))
-                    }}
-                    className={`w-8 h-8 rounded-full border-2 ${
-                      filters.colors.includes(color)
-                        ? 'border-black ring-2 ring-offset-2'
-                        : 'border-transparent'
-                    }`}
-                    style={{ backgroundColor: products
-                      .flatMap(p => p.colors)
-                      .find(c => c.name === color)?.value }}
-                    aria-label={color}
-                  />
-                ))}
+            {/* Color Filter - Only show if products have colors */}
+            {hasColors && (
+              <div className="border-b pb-6">
+                <h3 className="font-semibold mb-4">Colors</h3>
+                <div className="flex flex-wrap gap-2">
+                  {allColors.map(color => (
+                    <button
+                      type="button"
+                      key={color}
+                      onClick={() => {
+                        const newColors = filters.colors.includes(color)
+                          ? filters.colors.filter(c => c !== color)
+                          : [...filters.colors, color]
+                        setFilters(prev => ({ ...prev, colors: newColors }))
+                      }}
+                      className={`w-8 h-8 rounded-full border-2 ${
+                        filters.colors.includes(color)
+                          ? 'border-black ring-2 ring-offset-2'
+                          : 'border-transparent'
+                      }`}
+                      style={{ backgroundColor: products
+                        .flatMap(p => p.attributes.find(attr => attr.name.toLowerCase() === 'color')?.values || [])
+                        .find(v => v.value === color)?.color_code }}
+                      aria-label={color}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Reset Button */}
             <button
@@ -243,8 +285,7 @@ export default function ProductFilterPage() {
           <div className="flex-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               {paginatedProducts.map((product) => {
-                const productImage = ProductImages.products[product.slug as keyof typeof ProductImages.products]?.main || 
-                  ProductImages.placeholder
+                const productImage = product.images[0]?.image || ProductImages.placeholder
 
                 return (
                   <div key={product.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
@@ -261,16 +302,16 @@ export default function ProductFilterPage() {
                       <h3 className="font-semibold text-sm mb-1">{product.name}</h3>
                       <p className="text-xs text-gray-500 mb-1">{product.description}</p>
                       <div className="flex items-center gap-2">
-                        <p className="font-bold text-lg">{product.price}</p>
-                        {product.discount && (
-                          <span className="text-sm text-gray-500 line-through">{product.originalPrice}</span>
+                        <p className="font-bold text-lg">{product.current_price}</p>
+                        {product.is_sale && (
+                          <span className="text-sm text-gray-500 line-through">{product.price}</span>
                         )}
                       </div>
                       <div className="flex items-center mt-1">
                         <span className="text-yellow-400">
                           {Array.from({ length: 5 }).map((_, i) => (
                             <span key={`star-${product.id}-${i}`}>
-                              {ProductIcons.star(i < Math.floor(product.rating))}
+                              {ProductIcons.star(i < Math.floor(parseFloat(product.average_rating)))}
                             </span>
                           ))}
                         </span>

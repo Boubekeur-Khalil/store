@@ -46,6 +46,14 @@ export interface ProductFAQ {
   answer: string;
 }
 
+export interface ProductAttribute {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  values: AttributeValue[];
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -68,8 +76,10 @@ export interface Product {
   reviews: string;
   is_sale: boolean;
   current_price: string;
-  attributes: string;
+  attributes: ProductAttribute[];
   status: 'draft' | 'published' | 'archived';
   selectedVariant?: ProductVariant;
   quantity?: number;
-} 
+  selectedColor?: string;
+  selectedSize?: string;
+}

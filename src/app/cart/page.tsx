@@ -14,6 +14,7 @@ import Newsletter from '@/components/section/newsletter'
 import { toast } from 'react-toastify'
 import { useCart } from "@/hooks/use-cart"
 
+
 export default function CartPage() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
@@ -23,7 +24,7 @@ export default function CartPage() {
     setLoading(false)
   }, [])
 
-  const handleRemoveFromCart = (productId: string) => {
+  const handleRemoveFromCart = (productId: number) => {
     const itemToRemove = cartItems.find(item => item.id === productId)
     
     if (itemToRemove) {
@@ -36,7 +37,7 @@ export default function CartPage() {
         <div className="flex items-center gap-3">
           <div className="relative w-10 h-10 rounded-full overflow-hidden border border-gray-200">
             <Image
-              src={productImage}
+              src={itemToRemove.images[0]?.image}
               alt={itemToRemove.name}
               fill
               className="object-cover"
@@ -59,7 +60,7 @@ export default function CartPage() {
     }
   }
 
-  const updateQuantity = (productId: string, newQuantity: number) => {
+  const updateQuantity = (productId: number, newQuantity: number) => {
     const product = cartItems.find(item => item.id === productId)
     if (!product) return
 
@@ -69,14 +70,16 @@ export default function CartPage() {
       return
     }
     
-    // First remove the item
-    removeFromCart(productId)
+    // Update the cart with the new quantity
+    const updatedCart = cartItems.map(item => 
+      item.id === productId 
+        ? { ...item, quantity: newQuantity }
+        : item
+    )
     
-    // Then add it back with new quantity
-    addToCart({
-      ...product,
-      quantity: newQuantity
-    })
+    // Update localStorage and state
+    localStorage.setItem('cart', JSON.stringify(updatedCart))
+    window.dispatchEvent(new Event('cartUpdate'))
   }
 
   const calculateTotal = () => {
@@ -90,9 +93,8 @@ export default function CartPage() {
     // Enhance cart items with full image information before sending
     const enhancedCartItems = cartItems.map(item => ({
       ...item,
-      // Ensure we have the full image path
-      image: ProductImages.products[item.slug as keyof typeof ProductImages.products]?.main || 
-             ProductImages.placeholder
+      // Use the first image from the product's images array, or fallback to placeholder
+      image: item.images[0]?.image || ProductImages.placeholder
     }))
     
     sessionStorage.setItem('checkoutItems', JSON.stringify(enhancedCartItems))
@@ -133,7 +135,7 @@ export default function CartPage() {
                 return (
                   <div key={product.id} className="bg-white p-4 rounded-lg shadow-sm flex gap-4">
                     <Image
-                      src={productImage}
+                      src={product.images[0]?.image}
                       alt={product.name}
                       width={120}
                       height={120}

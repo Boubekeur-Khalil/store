@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useCheckout, useWilayas } from '@/hooks/hooks'
 
 interface CartItem {
   id: string
@@ -31,18 +32,18 @@ export default function CheckoutPage() {
   const [checkoutItems, setCheckoutItems] = useState<CartItem[]>([])
   const [discountCode, setDiscountCode] = useState('ZJ3OOFF')
   const [appliedDiscount, setAppliedDiscount] = useState(false)
-  const [selectedShipping, setSelectedShipping] = useState('')
-  const [email, setEmail] = useState('') // Added missing email state
-  const [newsletterEmail, setNewsletterEmail] = useState('') // Separate email state for newsletter
+  const [email, setEmail] = useState('')
+  const [newsletterEmail, setNewsletterEmail] = useState('')
+  const { submitCheckout, loading, error } = useCheckout()
+  const { wilayas, loading: wilayasLoading } = useWilayas()
   const [personalInfo, setPersonalInfo] = useState({
     fullName: '',
     phoneNumber: '',
     streetAddress: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: ''
+    wilaya: '',
+    email: ''
   })
+  const [wilayaId, setWilayaId] = useState<number>(1)
   const router = useRouter()
 
   useEffect(() => {
@@ -82,24 +83,22 @@ export default function CheckoutPage() {
     }
     if (!personalInfo.phoneNumber.trim()) {
       errors.push({ field: 'phoneNumber', message: 'Phone number is required' });
+    } else {
+      // Validate Algerian phone number format with +213
+      const phoneRegex = /^\+213[5-7][0-9]{8}$/;
+      const cleanNumber = personalInfo.phoneNumber.replace(/\s/g, '');
+      if (!phoneRegex.test(cleanNumber)) {
+        errors.push({ 
+          field: 'phoneNumber', 
+          message: 'Please enter a valid Algerian phone number (e.g., +213 5XX XX XX XX)' 
+        });
+      }
     }
     if (!personalInfo.streetAddress.trim()) {
       errors.push({ field: 'streetAddress', message: 'Street address is required' });
     }
-    if (!personalInfo.city.trim()) {
-      errors.push({ field: 'city', message: 'City is required' });
-    }
-    if (!personalInfo.state.trim()) {
-      errors.push({ field: 'state', message: 'State is required' });
-    }
-    if (!personalInfo.zipCode.trim()) {
-      errors.push({ field: 'zipCode', message: 'Zip code is required' });
-    }
-    if (!personalInfo.country.trim()) {
-      errors.push({ field: 'country', message: 'Country is required' });
-    }
-    if (!selectedShipping) {
-      errors.push({ field: 'shipping', message: 'Please select a shipping method' });
+    if (!personalInfo.email.trim()) {
+      errors.push({ field: 'email', message: 'Email is required' });
     }
 
     return errors;
@@ -122,20 +121,6 @@ export default function CheckoutPage() {
     // You might want to show a success message or clear the form
     setNewsletterEmail('')
     alert('Thank you for subscribing to our newsletter!')
-  }
-
-  // Add this function before the return statement
-  const validateForm = () => {
-    return (
-      personalInfo.fullName.trim() !== '' &&
-      personalInfo.phoneNumber.trim() !== '' &&
-      personalInfo.streetAddress.trim() !== '' &&
-      personalInfo.city.trim() !== '' &&
-      personalInfo.state.trim() !== '' &&
-      personalInfo.zipCode.trim() !== '' &&
-      personalInfo.country.trim() !== '' &&
-      selectedShipping !== ''
-    )
   }
 
   return (
@@ -164,7 +149,40 @@ export default function CheckoutPage() {
                   <input 
                     type="tel" 
                     value={personalInfo.phoneNumber}
-                    onChange={(e) => setPersonalInfo(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                    onChange={(e) => {
+                      // Remove any non-digit characters except + and spaces
+                      let value = e.target.value.replace(/[^\d\s+]/g, '');
+                      
+                      // Ensure +213 is at the start
+                      if (!value.startsWith('+213')) {
+                        if (value.startsWith('+')) {
+                          value = '+213' + value.substring(1);
+                        } else if (value.startsWith('213')) {
+                          value = '+' + value;
+                        } else if (value.startsWith('0')) {
+                          value = '+213' + value.substring(1);
+                        } else {
+                          value = '+213' + value;
+                        }
+                      }
+                      
+                      // Format the number as user types (add spaces after +213)
+                      const formattedValue = value.replace(/(\+213)(\d{2})(?=\d)/g, '$1 $2');
+                      setPersonalInfo(prev => ({ ...prev, phoneNumber: formattedValue }));
+                    }}
+                    placeholder="+213 5XX XX XX XX"
+                    maxLength={15} // +213 + 9 digits + 2 spaces
+                    className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
+                    required
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Format: +213 5XX XX XX XX</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold mb-1">Email</label>
+                  <input 
+                    type="email" 
+                    value={personalInfo.email}
+                    onChange={(e) => setPersonalInfo(prev => ({ ...prev, email: e.target.value }))}
                     className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
                     required
                   />
@@ -186,98 +204,25 @@ export default function CheckoutPage() {
                     required
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold mb-1">City</label>
-                    <input 
-                      type="text" 
-                      value={personalInfo.city}
-                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, city: e.target.value }))}
-                      className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold mb-1">State</label>
-                    <input 
-                      type="text" 
-                      value={personalInfo.state}
-                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, state: e.target.value }))}
-                      className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                      required
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-bold mb-1">Wilaya</label>
+                  <select
+                    value={wilayaId}
+                    onChange={(e) => setWilayaId(parseInt(e.target.value))}
+                    className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black"
+                    required
+                  >
+                    {wilayasLoading ? (
+                      <option value="">Loading wilayas...</option>
+                    ) : (
+                      wilayas.map((wilaya) => (
+                        <option key={wilaya.id} value={wilaya.id}>
+                          {wilaya.name}
+                        </option>
+                      ))
+                    )}
+                  </select>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold mb-1">Zip Code</label>
-                    <input 
-                      type="text" 
-                      value={personalInfo.zipCode}
-                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, zipCode: e.target.value }))}
-                      className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold mb-1">Country</label>
-                    <input 
-                      type="text" 
-                      value={personalInfo.country}
-                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, country: e.target.value }))}
-                      className="w-full p-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-black focus:border-black" 
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Delivery Method */}
-            <section>
-              <h2 className="text-base font-medium mb-4 border-b border-gray-200 pb-2 my-8">Delivery Method</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button 
-                  onClick={() => setSelectedShipping('MAYSTRO DELIVERY')}
-                  className={`p-4 border rounded-full flex items-center justify-center gap-2 transition-colors ${
-                    selectedShipping === 'MAYSTRO DELIVERY' 
-                      ? 'border-black bg-gray-100' 
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white overflow-hidden">
-                   <img src="/images/maystro.png" alt="Maystro" className="w-full h-full object-cover" />
-                  </div>
-                  <span className="font-medium">MAYSTRO DELIVERY</span>
-                </button>
-
-                <button 
-                  onClick={() => setSelectedShipping('YALIDINE EXPRESS')}
-                  className={`p-4 border rounded-full flex items-center justify-center gap-2 transition-colors ${
-                    selectedShipping === 'YALIDINE EXPRESS' 
-                      ? 'border-black bg-gray-100' 
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white overflow-hidden">
-                    <img src="/images/yalidin.png" alt="Yalidine" className="w-full h-full object-cover" />
-                  </div>
-                  <span className="font-medium">YALIDINE EXPRESS</span>
-                </button>
-
-                <button 
-                  onClick={() => setSelectedShipping('ZR EXPRESS')}
-                  className={`p-4 border rounded-full flex items-center justify-center gap-2 transition-colors ${
-                    selectedShipping === 'ZR EXPRESS' 
-                      ? 'border-black bg-gray-100' 
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-black overflow-hidden">
-                    <img src="/images/ZR.png" alt="ZR Express" className="w-full h-full object-cover" />
-                  </div>
-                  <span className="font-medium">ZR EXPRESS</span>
-                </button>
               </div>
             </section>
           </div>
@@ -371,19 +316,38 @@ export default function CheckoutPage() {
                 </div>
                 
                 <button 
-                  onClick={() => {
+                  onClick={async () => {
                     const errors = validateCheckout();
                     if (errors.length === 0) {
-                      router.push('/checkout/success');
+                      try {
+                        const checkoutData = {
+                          customer_name: personalInfo.fullName,
+                          customer_email: personalInfo.email,
+                          customer_phone: personalInfo.phoneNumber.replace(/\s/g, ''), // Remove spaces for API
+                          wilaya_id: wilayaId,
+                          address: personalInfo.streetAddress,
+                          items: checkoutItems.map(item => ({
+                            product_id: parseInt(item.id),
+                            quantity: item.quantity || 1
+                          })),
+                          notes: appliedDiscount ? `Discount Code: ${discountCode}` : ''
+                        };
+                        
+                        await submitCheckout(checkoutData);
+                        router.push('/checkout/success');
+                      } catch {
+                        sessionStorage.setItem('checkoutErrors', JSON.stringify([{ field: 'general', message: error || 'Failed to process checkout' }]));
+                        router.push('/checkout/failed');
+                      }
                     } else {
-                      // Store errors in session storage to show them on the failed page
                       sessionStorage.setItem('checkoutErrors', JSON.stringify(errors));
                       router.push('/checkout/failed');
                     }
                   }}
-                  className="w-full py-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors mt-6"
+                  disabled={loading}
+                  className={`w-full py-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors mt-6 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  Checkout
+                  {loading ? 'Processing...' : 'Checkout'}
                 </button>
                 
                 <div className="text-center mt-4">

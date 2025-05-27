@@ -141,7 +141,7 @@ export const getReviews = async (productId: string): Promise<ReviewResponse[]> =
       throw new ApiException('Product ID is required');
     }
 
-    const response = await fetch(`${getBaseUrl()}${API_ENDPOINTS.PRODUCTS}${productId}/review/`);
+    const response = await fetch(`${getBaseUrl()}${API_ENDPOINTS.PRODUCTS}${productId}/get_reviews/`);
 
     if (!response.ok) {
       const contentType = response.headers.get('content-type');

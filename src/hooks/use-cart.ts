@@ -71,7 +71,7 @@ export const useCart = () => {
     window.dispatchEvent(new Event('cartUpdate'))
   }
 
-  const removeFromCart = (productId: string) => {
+  const removeFromCart = (productId: number) => {
     const newCart = cart.filter(item => item.id !== productId)
     setCart(newCart)
     localStorage.setItem('cart', JSON.stringify(newCart))

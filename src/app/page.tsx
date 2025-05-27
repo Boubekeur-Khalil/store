@@ -5,9 +5,9 @@ import TestimonialSlider from "@/components/product/testimonial-slider"
 import Newsletter from "@/components/section/newsletter"
 import ProductHeader from "@/components/section/header"
 import Footer from "@/components/product/footer"
-import { ProductConstants } from "../utils/constants"
+import {LandingPageConstants as ProductConstants } from "../utils/constants"
 import { ProductImages } from "./products/[slug]/images"
-import { products } from "@/lib/products/products"
+
 import CountUp from "@/components/common/CountUp"
 
 export default function Home() {

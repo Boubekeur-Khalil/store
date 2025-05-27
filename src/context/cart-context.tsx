@@ -7,7 +7,7 @@ import { Product } from '@/lib/types/product'
 interface CartContextType {
   cart: Product[]
   addToCart: (product: Product) => void
-  removeFromCart: (productId: string) => void
+  removeFromCart: (productId: number) => void
 }
 
 const CartContext = createContext<CartContextType>({} as CartContextType)
@@ -41,7 +41,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('cart', JSON.stringify(newCart))
   }
 
-  const removeFromCart = (productId: string) => {
+  const removeFromCart = (productId: number) => {
     const newCart = cart.filter(item => item.id !== productId)
     setCart(newCart)
     localStorage.setItem('cart', JSON.stringify(newCart))

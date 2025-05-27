@@ -25,11 +25,7 @@ export default function OrderSuccessPage() {
               >
                 Continue Shopping
               </Link>
-              <button
-                className="block w-full py-3 px-4 text-center border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-              >
-                Track order
-              </button>
+              
             </div>
           </div>
         </div>
